@@ -12,6 +12,7 @@ import pandas as pd
 import os
 import io
 from PIL import Image
+import torchvision.models as models
 
 # python image library of range [0, 1] 
 # transform them to tensors of normalized range[-1, 1]
@@ -140,6 +141,24 @@ testloader = torch.utils.data.DataLoader(test_set, batch_size=batch_size,
                                          shuffle=False, num_workers=num_workers)
 valloader = torch.utils.data.DataLoader(val_set, batch_size=batch_size, shuffle=False, num_workers=num_workers)
 
+class ConvolutionalNeuralNet(nn.Module):
+    def __init__(self):
+        super(ConvolutionalNeuralNet, self).__init__()
+        self.conv1 = nn.Conv2d(3, 6, 5, kernel_size=5)
+        self.conv2 = nn.Conv2d(10, 20, kernel_size=5)
+        self.conv2_drop = nn.Dropout2d()
+        self.fc1 = nn.Linear(320, 50)
+        self.fc2 = nn.Linear(50, 10)
+
+    def forward(self, x):
+        x = F.relu(F.max_pool2d(self.conv1(x), 2))
+        x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
+        x = x.view(-1, 320)
+        x = F.relu(self.fc1(x))
+        x = F.dropout(x, training=self.training)
+        x = self.fc2(x)
+        return F.log_softmax(x)
+
 class Net(nn.Module):
     ''' Models a simple Convolutional Neural Network'''
 	
@@ -173,8 +192,9 @@ class Net(nn.Module):
         # print(x.shape)
         return x
 
-net = Net()
-#print(net)
+net = models.resnet18(pretrained=False) # try with both pre-trained and not pre-trained ResNet model!
+net.fc = nn.Linear(in_features=512, out_features=1)
+print(net)
 
 criterion = nn.MSELoss()
 optimizer = optim.SGD(net.parameters(), lr=0.0001, momentum=0.9)
@@ -193,7 +213,6 @@ for epoch in range(6):  # loop over the dataset multiple times
     for i, data in enumerate(trainloader, 0):
         # get the inputs; data is a list of [inputs, labels]
         inputs, labels = data
-
        # print('iter')
 
         # zero the parameter gradients
@@ -201,6 +220,9 @@ for epoch in range(6):  # loop over the dataset multiple times
 
         # forward + backward + optimize
         outputs = net(inputs)
+        _, pred = torch.max(outputs, 1)
+
+        pred = pred.unsqueeze(1)
         loss = criterion(outputs, labels[:, None])
 
 #        print("predictions:")
@@ -246,19 +268,19 @@ with torch.no_grad():
             images = data
             labels = target
             outputs = net(images)
-           # print("Outputs ", outputs)
+            print("Outputs ", outputs)
             loss = criterion(outputs, labels[:, None])
             total += labels.size(0)
-           # print("label ", labels)
+            print("label ", labels)
 
-            correct += (outputs == labels).sum().item()
+#            correct += (outputs == labels).sum().item()
             total_losss += loss.item()
 
             accuracy = correct / total
 
-  #      print('Test Accuracy of the model: {} %'.format(100 * correct / total))
+        print('Test Accuracy of the model: {} %'.format(100 * correct / total))
         print('Test log loss ', total_losss/total)
-   #     print('Test accuracy ', ((correct / total) * 100))
+        print('Test accuracy ', ((correct / total) * 100))
 
 print('Measuring Validation Accuracy')
 
@@ -267,7 +289,7 @@ net.eval()
 with torch.no_grad():
         correct = 0
         total = 0
-        total_losss =0
+        total_losss = 0
 
         for data, target in valloader:
             images = data
@@ -280,9 +302,10 @@ with torch.no_grad():
 
             correct += (outputs == labels).sum().item()
             total_losss += loss.item()
+            
+            
+            accuracy = np.avg(np.abs(outputs - labels) / 
 
-            accuracy = correct / total
-
-#        print('Validation Accuracy of the model: {} %'.format(100 * correct / total))
+        print('Validation Accuracy of the model: {} %'.format(100 * correct / total))
         print('Validation log loss ', total_losss/total)
- #       print('Validation accuracy ', ((correct / total) * 100))
+        print('Validation accuracy ', ((correct / total) * 100))
