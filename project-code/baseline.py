@@ -129,19 +129,16 @@ num_workers = 2
 # load train data
 housing_data = "data/int/applications/housing/outcomes_sampled_housing_CONTUS_16_640_POP_100000_0.csv"
 image_root = "data/raw/mosaiks_images"
-trainset = SatDataset(housing_data, image_root, transform)
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
+dataset = SatDataset(housing_data, image_root, transform)
+
+print("length of dataset ", len(dataset))
+
+train_set, val_set, test_set = torch.utils.data.random_split(dataset, [1800, 225, 225])
+trainloader = torch.utils.data.DataLoader(train_set, batch_size=batch_size,
                                           shuffle=True, num_workers=num_workers)
-
-# load test data
-testset = trainset
-testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
+testloader = torch.utils.data.DataLoader(test_set, batch_size=batch_size,
                                          shuffle=False, num_workers=num_workers)
-
-# # put 10 classes into a set
-# classes = ('plane', 'car', 'bird', 'cat',
-#            'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-
+valloader = torch.utils.data.DataLoader(val_set, batch_size=batch_size, shuffle=False, num_workers=num_workers)
 
 class Net(nn.Module):
     ''' Models a simple Convolutional Neural Network'''
@@ -177,11 +174,10 @@ class Net(nn.Module):
         return x
 
 net = Net()
-print(net)
-
+#print(net)
 
 criterion = nn.MSELoss()
-optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
+optimizer = optim.SGD(net.parameters(), lr=0.0001, momentum=0.9)
 
 
 start = torch.cuda.Event(enable_timing=True)
@@ -198,7 +194,7 @@ for epoch in range(6):  # loop over the dataset multiple times
         # get the inputs; data is a list of [inputs, labels]
         inputs, labels = data
 
-        # print('iter')
+       # print('iter')
 
         # zero the parameter gradients
         optimizer.zero_grad()
@@ -207,21 +203,25 @@ for epoch in range(6):  # loop over the dataset multiple times
         outputs = net(inputs)
         loss = criterion(outputs, labels[:, None])
 
-        # print("predictions:")
-        # print(inputs.shape)
-        # print(labels.shape)
-        # print(type(labels))
-        # print(outputs.shape)
-        # print(outputs)
-        # print(labels)
+#        print("predictions:")
+ #       print(inputs.shape)
+  #      print(labels.shape)
+   #     print(type(labels))
+    #    print(outputs.shape)
+     #   print(outputs)
+      #  print(labels)
 
         loss.backward()
         optimizer.step()
 
         # print statistics
-        running_loss += loss.item()
+       # print('loss item ', loss.item())
+
+        if (np.isinf(loss.item())):
+            running_loss += 10000000000
+        else:
+            running_loss += loss.item()
         if i % 100 == 0:    # print every 2000 mini-batches
-            print(running_loss)
             print('[%d, %5d] loss: %.3f' %
                   (epoch + 1, i + 1, running_loss / 2000))
             running_loss = 0.0
@@ -233,4 +233,56 @@ end.record()
 torch.cuda.synchronize()
 
 print('Finished Training')
-print(start.elapsed_time(end))  # milliseconds
+print('Measuring Test Accuracy')
+
+net.eval()
+
+with torch.no_grad():
+        correct = 0
+        total = 0
+        total_losss =0
+
+        for data, target in testloader:
+            images = data
+            labels = target
+            outputs = net(images)
+           # print("Outputs ", outputs)
+            loss = criterion(outputs, labels[:, None])
+            total += labels.size(0)
+           # print("label ", labels)
+
+            correct += (outputs == labels).sum().item()
+            total_losss += loss.item()
+
+            accuracy = correct / total
+
+  #      print('Test Accuracy of the model: {} %'.format(100 * correct / total))
+        print('Test log loss ', total_losss/total)
+   #     print('Test accuracy ', ((correct / total) * 100))
+
+print('Measuring Validation Accuracy')
+
+net.eval()
+
+with torch.no_grad():
+        correct = 0
+        total = 0
+        total_losss =0
+
+        for data, target in valloader:
+            images = data
+            labels = target
+            outputs = net(images)
+          #  print("Outputs ", outputs)
+            loss = criterion(outputs, labels[:, None])
+            total += labels.size(0)
+           # print("label ", labels)
+
+            correct += (outputs == labels).sum().item()
+            total_losss += loss.item()
+
+            accuracy = correct / total
+
+#        print('Validation Accuracy of the model: {} %'.format(100 * correct / total))
+        print('Validation log loss ', total_losss/total)
+ #       print('Validation accuracy ', ((correct / total) * 100))
