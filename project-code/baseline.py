@@ -2,135 +2,30 @@ import matplotlib.pyplot as plt # for plotting
 import numpy as np # for transformation
 
 import torch # PyTorch package
-import torchvision # load datasets
-import torchvision.transforms as transforms # transform data
 import torch.nn as nn # basic building block for neural neteorks
 import torch.nn.functional as F # import convolution functions like Relu
 import torch.optim as optim # optimzer
-from torch.utils.data import Dataset
-import pandas as pd
-import os
-import io
-from PIL import Image
 import torchvision.models as models
+import numpy as np
 
-# python image library of range [0, 1] 
-# transform them to tensors of normalized range[-1, 1]
-
-transform = transforms.Compose( # composing several transforms together
-    [torchvision.transforms.Resize(256),
-     transforms.ToTensor(), # to tensor object
-     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]) # mean = 0.5, std = 0.5
-
-
-#####
-# DataLoader
-#####
-
-def image_present(root_dir, indices):
-
-    # print(indices)
-
-    ij = indices.split(",")
-    i = ij[0]
-    j = ij[1]
-
-    file_name = str(i) + "_" + str(j) + ".png"
-    return os.path.exists(os.path.join(root_dir, file_name))
-
-class SatDataset(Dataset):
-    """Face Landmarks dataset."""
-
-    def __init__(self, csv_file, root_dir, transform=None):
-        """
-        Args:
-            csv_file (string): Path to the csv file with annotations.
-            root_dir (string): Directory with all the images.
-            transform (callable, optional): Optional transform to be applied
-                on a sample.
-        """
-        all_labels = pd.read_csv(csv_file)
-        
-        # filter missing
-
-        # self.labels = self.labels.apply(lambda row: row[image_present(root_dir, row[0])], axis=1)
-
-
-        mask = all_labels.apply(lambda row: image_present(root_dir, row[0]), axis=1)
-        print(all_labels[mask])
-
-        self.labels = all_labels[mask]
-
-        print("filtered missing")
-
-
-        self.root_dir = root_dir
-        self.transform = transform
-
-        print(self.labels)
-
-    def __len__(self):
-        return len(self.labels)
-
-    def __getitem__(self, idx):
-
-        # print("get item")
-        # print(idx)
-
-
-        # if torch.is_tensor(idx):
-        #     idx = idx.tolist()
-        # else:
-        #     idx = [idx]
-        
-        # images = []
-        # prices = []
-
-        i = idx
-
-        # for i in idx:
-        file_name = self.labels.iloc[i, 0].replace(",", "_") + ".png"
-
-        # print(file_name)
-
-        img_name = os.path.join(self.root_dir,
-                                file_name)
-        image = Image.open(img_name).convert('RGB')
-
-
-        # print(image)
-
-
-        # landmarks = self.landmarks_frame.iloc[idx, 1:]
-        # landmarks = np.array([landmarks])
-        # landmarks = landmarks.astype('float').reshape(-1, 2)
-        # sample = {'image': image, 'price': self.labels.iloc[idx, 1]}
-
-        # if self.transform:
-        #     sample = self.transform(sample)
-    
-        price = self.labels.iloc[idx, 1]
-        # prices.append(price)
-        # images.append(self.transform(image))
-        return [self.transform(image), np.log(price.astype(np.float32))]
-
-
-
-print(torch.version.cuda)
+# local imports
+from dataloader import SatDataset
+from networks import ConvolutionalNeuralNet, Net
+import matplotlib.pyplot as plt
 
 #####
 #####
 
 # set batch_size
-batch_size = 4
+batch_size = 64
 
 # set number of workers
-num_workers = 2
+num_workers = 4
 
 # load train data
 housing_data = "data/int/applications/housing/outcomes_sampled_housing_CONTUS_16_640_POP_100000_0.csv"
 image_root = "data/raw/mosaiks_images"
-dataset = SatDataset(housing_data, image_root, transform)
+dataset = SatDataset(housing_data, image_root)
 
 print("length of dataset ", len(dataset))
 
@@ -141,71 +36,29 @@ testloader = torch.utils.data.DataLoader(test_set, batch_size=batch_size,
                                          shuffle=False, num_workers=num_workers)
 valloader = torch.utils.data.DataLoader(val_set, batch_size=batch_size, shuffle=False, num_workers=num_workers)
 
-class ConvolutionalNeuralNet(nn.Module):
-    def __init__(self):
-        super(ConvolutionalNeuralNet, self).__init__()
-        self.conv1 = nn.Conv2d(3, 6, 5, kernel_size=5)
-        self.conv2 = nn.Conv2d(10, 20, kernel_size=5)
-        self.conv2_drop = nn.Dropout2d()
-        self.fc1 = nn.Linear(320, 50)
-        self.fc2 = nn.Linear(50, 10)
 
-    def forward(self, x):
-        x = F.relu(F.max_pool2d(self.conv1(x), 2))
-        x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
-        x = x.view(-1, 320)
-        x = F.relu(self.fc1(x))
-        x = F.dropout(x, training=self.training)
-        x = self.fc2(x)
-        return F.log_softmax(x)
-
-class Net(nn.Module):
-    ''' Models a simple Convolutional Neural Network'''
-	
-    def __init__(self):
-        super(Net, self).__init__()
-        # 3 input image channel, 6 output channels, 
-        # 5x5 square convolution kernel
-        self.conv1 = nn.Conv2d(3, 6, 5)
-        # Max pooling over a (2, 2) window
-        self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(6, 10, 5) 
-        self.fc1 = nn.Linear(37210, 120)# 5x5 from image dimension
-        self.fc2 = nn.Linear(120, 84)
-        # 1 real output
-        self.fc3 = nn.Linear(84, 1)
-
-    def forward(self, x):
-        # print("forward called with")
-        # print(x.shape)
-        x = self.pool(F.relu(self.conv1(x)))
-        # print(x.shape)
-        x = self.pool(F.relu(self.conv2(x)))
-        # print(x.shape)
-        x = x.view(-1, 37210)
-        # print(x.shape)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-
-        # print("returning")
-        # print(x.shape)
-        return x
-
-net = models.resnet18(pretrained=False) # try with both pre-trained and not pre-trained ResNet model!
+net = models.resnet18(pretrained=True) # try with both pre-trained and not pre-trained ResNet model!
 net.fc = nn.Linear(in_features=512, out_features=1)
+model_name = "pretrained_resnet"
+
 print(net)
 
 criterion = nn.MSELoss()
-optimizer = optim.SGD(net.parameters(), lr=0.0001, momentum=0.9)
+# optimizer = optim.SGD(net.parameters(), lr=0.0001, momentum=0.9)
+optimizer = torch.optim.Adam(net.parameters(), lr=0.01)
 
 
 start = torch.cuda.Event(enable_timing=True)
 end = torch.cuda.Event(enable_timing=True)
-
 start.record()
 
 print("STARTING TRAINING LOOP")
+
+def get_percent_error(outputs, labels):
+    # print(outputs.shape)
+    # print(labels.shape)
+
+    return np.average(np.abs(outputs - labels) / labels) * 100
 
 for epoch in range(6):  # loop over the dataset multiple times
 
@@ -213,7 +66,6 @@ for epoch in range(6):  # loop over the dataset multiple times
     for i, data in enumerate(trainloader, 0):
         # get the inputs; data is a list of [inputs, labels]
         inputs, labels = data
-       # print('iter')
 
         # zero the parameter gradients
         optimizer.zero_grad()
@@ -225,28 +77,27 @@ for epoch in range(6):  # loop over the dataset multiple times
         pred = pred.unsqueeze(1)
         loss = criterion(outputs, labels[:, None])
 
-#        print("predictions:")
- #       print(inputs.shape)
-  #      print(labels.shape)
-   #     print(type(labels))
-    #    print(outputs.shape)
-     #   print(outputs)
-      #  print(labels)
-
         loss.backward()
         optimizer.step()
 
         # print statistics
-       # print('loss item ', loss.item())
+        # print('loss item ', loss.item())
 
+        # print(get_percent_error(outputs, labels))
+
+        # TODO check if this is common technique
         if (np.isinf(loss.item())):
             running_loss += 10000000000
         else:
             running_loss += loss.item()
-        if i % 100 == 0:    # print every 2000 mini-batches
-            print('[%d, %5d] loss: %.3f' %
-                  (epoch + 1, i + 1, running_loss / 2000))
-            running_loss = 0.0
+
+        print("epoch " + str(epoch) + ", i=" + str(i) + " loss=" + str(loss.item()))
+
+
+        # if i % 100 == 0:    # print every 2000 mini-batches
+        #     print('[%d, %5d] loss: %.3f' %
+        #           (epoch + 1, i + 1, running_loss / 2000))
+        #     running_loss = 0.0
 
 # whatever you are timing goes here
 end.record()
@@ -286,26 +137,57 @@ print('Measuring Validation Accuracy')
 
 net.eval()
 
+# graphing 
+
+x = []
+y = []
+
 with torch.no_grad():
         correct = 0
-        total = 0
-        total_losss = 0
+        num_predictions = 0
+        total_loss = 0
 
+        percent_error = 0
+        
+        batchs = 0
         for data, target in valloader:
             images = data
             labels = target
             outputs = net(images)
-          #  print("Outputs ", outputs)
+            batchs += 1
+
+            print(dataset.transform_output(outputs.detach()))
+
+            #  print("Outputs ", outputs)
             loss = criterion(outputs, labels[:, None])
-            total += labels.size(0)
-           # print("label ", labels)
+            num_predictions += labels.size(0)
+            # print("label ", labels)
 
-            correct += (outputs == labels).sum().item()
-            total_losss += loss.item()
+            # correct += (outputs == labels).sum().item()
+            total_loss += loss.item()
             
-            
-            accuracy = np.avg(np.abs(outputs - labels) / 
+            print(labels.shape)
+            print(dataset.transform_output(outputs.detach()).shape)
+            print(outputs.shape)
 
-        print('Validation Accuracy of the model: {} %'.format(100 * correct / total))
-        print('Validation log loss ', total_losss/total)
-        print('Validation accuracy ', ((correct / total) * 100))
+
+            price_predictions = dataset.transform_output(outputs.detach())
+            true_prices = dataset.transform_output(labels)
+            percent_error += get_percent_error(price_predictions, true_prices)
+
+            for i in range(len(true_prices)):
+                x.append(true_prices[i])
+                y.append(price_predictions[i])
+
+        print(num_predictions)
+        print('Validation loss ', total_loss/num_predictions)
+        print('Validation percent error ', percent_error / batchs)
+
+        plt.scatter(x, y)
+        plt.xlabel("True Prices")
+        plt.ylabel("Predicted Prices")
+        plt.savefig("predictions.png")
+
+
+
+torch.save(net.state_dict(), "./models/" + model_name + ".pt")
