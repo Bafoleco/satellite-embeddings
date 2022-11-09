@@ -8,3 +8,5 @@ rm data/int/applications.zip
 wget -O data/raw/images.zip https://storage.googleapis.com/cs229-sat-embeddings/images.zip
 unzip data/raw/images.zip -d data/raw/
 rm data/raw/images.zip
+mv data/raw/content/mosaiks_images/ data/raw/
+rm -rf data/raw/content/
