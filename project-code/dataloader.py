@@ -6,18 +6,16 @@ import os
 from PIL import Image
 import numpy as np
 
-
 # python image library of range [0, 1] 
 # transform them to tensors of normalized range[-1, 1]
-transform = transforms.Compose( # composing several transforms together
+base_transform = transforms.Compose( # composing several transforms together
     [torchvision.transforms.Resize(256),
      transforms.ToTensor(), # to tensor object
      transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]) # mean = 0.5, std = 0.5
 
+
+
 def image_present(root_dir, indices):
-
-    # print(indices)
-
     ij = indices.split(",")
     i = ij[0]
     j = ij[1]
@@ -26,59 +24,62 @@ def image_present(root_dir, indices):
     return os.path.exists(os.path.join(root_dir, file_name))
 
 
+def normalize(col):
+    col_mean = col.mean()
+    col_std = col.std()
+    norm_col = (col - col_mean) / col_std
 
-
-uar_elevation = "outcomes_sampled_elevation_CONTUS_16_640_UAR_100000_0.csv"
-uar_income = "outcomes_sampled_income_CONTUS_16_640_UAR_100000_0.csv"
-uar_population = "outcomes_sampled_population_CONTUS_16_640_UAR_100000_0.csv"
-uar_roads = "outcomes_sampled_roads_CONTUS_16_640_UAR_100000_0.csv"
-uar_treecover = "outcomes_sampled_treecover_CONTUS_16_640_UAR_100000_0.csv"
-uar_nightlights = "outcomes_sampled_nightlights_CONTUS_16_640_UAR_100000_0.csv"
-
-
-def normalize(y):
-    mean = np.average(y)
-    std = np.std(y)
-    # print(std)
-    return (y - mean) / std, mean, std
+    return norm_col, (col_mean, col_std)
+    
 
 class SatDataset(Dataset):
 
     def transform_output(self, output, label="price"):
-        mean, std = self.label_transforms[label]
-        return std * output + mean
 
-    def __init__(self, csv_file, root_dir, elevation=False, income=False, pop=False, roads=False, treecover=False, lights=False):
-        """
-        Args:
-            csv_file (string): Path to the csv file with annotations.
-            root_dir (string): Directory with all the images.
-            transform (callable, optional): Optional transform to be applied
-                on a sample.
-        """
-        all_labels = pd.read_csv(csv_file)
-        
-        # filter missing
-        mask = all_labels.apply(lambda row: image_present(root_dir, row[0]), axis=1)
-        labels = all_labels[mask]
+        transformed_output = np.zeros(output.shape)
+        for i in range(output.shape[1]):
+            task = self.tasks[i]
+            # undo normalization
+            transformed_output[:, i] = output[:, i] * self.label_transforms[task][1] + self.label_transforms[task][0]
+
+        return transformed_output
+
+    def __init__(self, tasks, root_dir, transform=None):
+        transform = base_transform if transform is None else transform
+
+        self.tasks = tasks
 
         # init label transform map
         self.label_transforms = {}
 
+        df = pd.DataFrame()
         
-        # normalize price col
-        price_col = labels.loc[:, "price"]
+        for i, task in enumerate(tasks): 
+            print(task)               
+            csv_file, column_title = task
+            csv = pd.read_csv(csv_file)
+            print(len(csv))
+            mask = csv.apply(lambda row: image_present(root_dir, row["ID"]), axis=1)
+            print(len(mask))
 
-        mean_price = price_col.mean()
-        std_price = price_col.std()
 
-        self.label_transforms["price"] = (mean_price, std_price)
+            print("mask", mask)
 
-        norm_prices = (price_col - price_col.mean()) / price_col.std()
-        labels.loc[:, "price"] = norm_prices
+            filtered_csv = csv[mask]
 
-        self.labels = labels
+            if i == 0:
+                id_col = filtered_csv.loc[:, "ID"]
+                df.insert(len(df.columns), "ID", id_col)
 
+            col = filtered_csv.loc[:, column_title]
+
+            norm_col, col_transform = normalize(col)
+            self.label_transforms[task] = col_transform
+
+            df.insert(len(df.columns), column_title, norm_col)
+            
+
+        self.labels = df
         
         # set image parameters
         self.root_dir = root_dir
@@ -87,26 +88,14 @@ class SatDataset(Dataset):
     def __len__(self):
         return len(self.labels)
 
-    def __getitem__(self, idx):
-
-        i = idx
-
-        # for i in idx:
-
-        # print(self.labels.iloc[i])
-
-        file_name = self.labels.iloc[i, 0].replace(",", "_") + ".png"
-
-        # print(file_name)
-
-        img_name = os.path.join(self.root_dir,
-                                file_name)
+    def __getitem__(self, i):
+        
+        # load image
+        file_name = self.labels.iloc[i, self.labels.columns.get_loc("ID")].replace(",", "_") + ".png"
+        img_name = os.path.join(self.root_dir, file_name)
         image = Image.open(img_name).convert('RGB')
 
-    
-        price = self.labels.iloc[idx, 1]
-        # prices.append(price)
-        # images.append(self.transform(image))
 
-
-        return [self.transform(image), price.astype(np.float32)]
+        labels = self.labels.iloc[i, 1:].to_numpy().astype(np.float32)
+ 
+        return [self.transform(image), labels]

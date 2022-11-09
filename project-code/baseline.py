@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt # for plotting
-import numpy as np # for transformation
+import numpy as np
+from util import get_model_loss, get_percent_error, graph_performance # for transformation
 
 import torch # PyTorch package
 import torch.nn as nn # basic building block for neural neteorks
@@ -7,46 +8,58 @@ import torch.nn.functional as F # import convolution functions like Relu
 import torch.optim as optim # optimzer
 import torchvision.models as models
 import numpy as np
+import matplotlib.pyplot as plt
 
 # local imports
 from dataloader import SatDataset
 from networks import ConvolutionalNeuralNet, Net
-import matplotlib.pyplot as plt
+import util, networks
 
 #####
 #####
 
 # set batch_size
 batch_size = 64
-
 # set number of workers
 num_workers = 4
 
+# initialize network
+net, transfrom = networks.get_resnet(1, pretrained=True)
+
+print("Num Params - Total, Trainable")
+
+pytorch_total_params = sum(p.numel() for p in net.parameters())
+print(pytorch_total_params)
+
+pytorch_trainable_params = sum(p.numel() for p in net.parameters() if p.requires_grad)
+print(pytorch_trainable_params)
+
 # load train data
-housing_data = "data/int/applications/housing/outcomes_sampled_housing_CONTUS_16_640_POP_100000_0.csv"
-image_root = "data/raw/mosaiks_images"
-dataset = SatDataset(housing_data, image_root)
+housing_data = "../data/int/applications/housing/outcomes_sampled_housing_CONTUS_16_640_POP_100000_0.csv"
+image_root = "../data/raw/mosaiks_images"
+dataset = util.create_dataset_treecover(transfrom)
 
 print("length of dataset ", len(dataset))
 
-train_set, val_set, test_set = torch.utils.data.random_split(dataset, [1800, 225, 225])
-trainloader = torch.utils.data.DataLoader(train_set, batch_size=batch_size,
-                                          shuffle=True, num_workers=num_workers)
-testloader = torch.utils.data.DataLoader(test_set, batch_size=batch_size,
-                                         shuffle=False, num_workers=num_workers)
+train_set, val_set, test_set = torch.utils.data.random_split(dataset, [8000, 1000, 1000])
+trainloader = torch.utils.data.DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=num_workers)
+testloader = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffle=False, num_workers=num_workers)
 valloader = torch.utils.data.DataLoader(val_set, batch_size=batch_size, shuffle=False, num_workers=num_workers)
 
 
-net = models.resnet18(pretrained=True) # try with both pre-trained and not pre-trained ResNet model!
-net.fc = nn.Linear(in_features=512, out_features=1)
 model_name = "pretrained_resnet"
 
-print(net)
+# print(net)
 
 criterion = nn.MSELoss()
 # optimizer = optim.SGD(net.parameters(), lr=0.0001, momentum=0.9)
-optimizer = torch.optim.Adam(net.parameters(), lr=0.01)
+optimizer = torch.optim.Adam(net.parameters(), lr=0.0001, weight_decay=0.01)
 
+
+# setup for GPU training
+print("CUDA status: ", torch.cuda.is_available())
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+net.to(device)
 
 start = torch.cuda.Event(enable_timing=True)
 end = torch.cuda.Event(enable_timing=True)
@@ -54,53 +67,50 @@ start.record()
 
 print("STARTING TRAINING LOOP")
 
-def get_percent_error(outputs, labels):
-    # print(outputs.shape)
-    # print(labels.shape)
 
-    return np.average(np.abs(outputs - labels) / labels) * 100
-
-for epoch in range(6):  # loop over the dataset multiple times
+x, val_losses, train_losses = [], [], []
+for epoch in range(3):  # loop over the dataset multiple times
 
     running_loss = 0.0
+    avg = 0
     for i, data in enumerate(trainloader, 0):
         # get the inputs; data is a list of [inputs, labels]
         inputs, labels = data
+        inputs, labels = inputs.to(device), labels.to(device)
 
         # zero the parameter gradients
         optimizer.zero_grad()
 
         # forward + backward + optimize
         outputs = net(inputs)
-        _, pred = torch.max(outputs, 1)
-
-        pred = pred.unsqueeze(1)
-        loss = criterion(outputs, labels[:, None])
-
+        loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
 
         # print statistics
-        # print('loss item ', loss.item())
+        running_loss += loss.item()
+        if i % 10 == 1:
+            print("epoch " + str(epoch) + ", i=" + str(i) + " loss=" + str(running_loss / 10))
+            avg = running_loss / 10
+            running_loss = 0.0
+            
 
-        # print(get_percent_error(outputs, labels))
+    val_loss = get_model_loss(valloader, dataset, net, criterion)
 
-        # TODO check if this is common technique
-        if (np.isinf(loss.item())):
-            running_loss += 10000000000
-        else:
-            running_loss += loss.item()
+    print("Validation loss: " + str(val_loss))
+    x.append(epoch)
+    val_losses.append(val_loss)
+    train_losses.append(avg)
 
-        print("epoch " + str(epoch) + ", i=" + str(i) + " loss=" + str(loss.item()))
+    plt.close()
+    plt.scatter(x, val_losses, label="Validation Loss")
+    plt.scatter(x, train_losses, label="Training Loss")
+    plt.legend()
+    plt.savefig("loss.png")
 
-
-        # if i % 100 == 0:    # print every 2000 mini-batches
-        #     print('[%d, %5d] loss: %.3f' %
-        #           (epoch + 1, i + 1, running_loss / 2000))
-        #     running_loss = 0.0
 
 # whatever you are timing goes here
-end.record()
+# end.record()
 
 # Waits for everything to finish running
 torch.cuda.synchronize()
@@ -110,28 +120,28 @@ print('Measuring Test Accuracy')
 
 net.eval()
 
-with torch.no_grad():
-        correct = 0
-        total = 0
-        total_losss =0
+# with torch.no_grad():
+#         correct = 0
+#         total = 0
+#         total_losss =0
 
-        for data, target in testloader:
-            images = data
-            labels = target
-            outputs = net(images)
-            print("Outputs ", outputs)
-            loss = criterion(outputs, labels[:, None])
-            total += labels.size(0)
-            print("label ", labels)
+#         for data, target in testloader:
+#             images = data
+#             labels = target
+#             outputs = net(images)
+#             print("Outputs ", outputs)
+#             loss = criterion(outputs, labels[:, None])
+#             total += labels.size(0)
+#             print("label ", labels)
 
-#            correct += (outputs == labels).sum().item()
-            total_losss += loss.item()
+# #            correct += (outputs == labels).sum().item()
+#             total_losss += loss.item()
 
-            accuracy = correct / total
+#             accuracy = correct / total
 
-        print('Test Accuracy of the model: {} %'.format(100 * correct / total))
-        print('Test log loss ', total_losss/total)
-        print('Test accuracy ', ((correct / total) * 100))
+#         print('Test Accuracy of the model: {} %'.format(100 * correct / total))
+#         print('Test log loss ', total_losss/total)
+#         print('Test accuracy ', ((correct / total) * 100))
 
 print('Measuring Validation Accuracy')
 
@@ -142,52 +152,9 @@ net.eval()
 x = []
 y = []
 
-with torch.no_grad():
-        correct = 0
-        num_predictions = 0
-        total_loss = 0
-
-        percent_error = 0
-        
-        batchs = 0
-        for data, target in valloader:
-            images = data
-            labels = target
-            outputs = net(images)
-            batchs += 1
-
-            print(dataset.transform_output(outputs.detach()))
-
-            #  print("Outputs ", outputs)
-            loss = criterion(outputs, labels[:, None])
-            num_predictions += labels.size(0)
-            # print("label ", labels)
-
-            # correct += (outputs == labels).sum().item()
-            total_loss += loss.item()
-            
-            print(labels.shape)
-            print(dataset.transform_output(outputs.detach()).shape)
-            print(outputs.shape)
-
-
-            price_predictions = dataset.transform_output(outputs.detach())
-            true_prices = dataset.transform_output(labels)
-            percent_error += get_percent_error(price_predictions, true_prices)
-
-            for i in range(len(true_prices)):
-                x.append(true_prices[i])
-                y.append(price_predictions[i])
-
-        print(num_predictions)
-        print('Validation loss ', total_loss/num_predictions)
-        print('Validation percent error ', percent_error / batchs)
-
-        plt.scatter(x, y)
-        plt.xlabel("True Prices")
-        plt.ylabel("Predicted Prices")
-        plt.savefig("predictions.png")
+graph_performance(valloader, dataset, net)
 
 
 
-torch.save(net.state_dict(), "./models/" + model_name + ".pt")
+
+torch.save(net.state_dict(), "./models/" + model_name + ".pth")

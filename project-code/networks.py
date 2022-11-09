@@ -11,10 +11,26 @@ import os
 import io
 from PIL import Image
 import torchvision.models as models
+from torchvision.models import ResNet18_Weights
+
+# import ResNet18_Weights 
+
 
 # local imports
 from dataloader import SatDataset
 
+
+def get_resnet(outputs, pretrained=True):
+    if pretrained:
+        pretrained_weights = ResNet18_Weights.DEFAULT
+    else:
+        pretrained_weights = None
+
+    net = models.resnet18(weights=pretrained_weights) # try with both pre-trained and not pre-trained ResNet model!
+    num_ftrs = net.fc.in_features
+    net.fc = nn.Linear(in_features=num_ftrs, out_features=outputs)
+
+    return net,  pretrained_weights.transforms() if pretrained else None
 
 class ConvolutionalNeuralNet(nn.Module):
     def __init__(self):
