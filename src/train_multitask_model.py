@@ -18,13 +18,12 @@ import util, networks, tasks
 #####
 #####
 
-# set batch_size
+# set batch_size and number of workers
 batch_size = 64
-# set number of workers
 num_workers = 2
 
 # initialize network
-net, transfrom = networks.get_resnet50(6, pretrained=True)
+net, model_name, transfrom = networks.get_visiontransformer(6, pretrained=True)
 
 print("Num Params - Total, Trainable")
 
@@ -37,16 +36,10 @@ print(pytorch_trainable_params)
 # load train data
 dataset = tasks.create_dataset_all(transfrom)
 
-print("length of dataset ", len(dataset))
-
 train_set, val_set, test_set = torch.utils.data.random_split(dataset, [8000, 1000, 1000])
 trainloader = torch.utils.data.DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=num_workers)
 testloader = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffle=False, num_workers=num_workers)
 valloader = torch.utils.data.DataLoader(val_set, batch_size=batch_size, shuffle=False, num_workers=num_workers)
-
-model_name = "pretrained_resnet"
-
-# print(net)
 
 criterion = nn.MSELoss()
 optimizer = torch.optim.Adam(net.parameters(), lr=0.0001, weight_decay=0.01)
@@ -63,7 +56,7 @@ start.record()
 print("STARTING TRAINING LOOP")
 
 x, val_losses, train_losses = [], [], []
-for epoch in range(1):  # loop over the dataset multiple times
+for epoch in range(6):  # loop over the dataset multiple times
 
     running_loss = 0.0
     avg = 0
@@ -103,8 +96,7 @@ for epoch in range(1):  # loop over the dataset multiple times
     plt.savefig("loss.png")
 
 
-# whatever you are timing goes here
-# end.record()
+end.record()
 
 # Waits for everything to finish running
 torch.cuda.synchronize()

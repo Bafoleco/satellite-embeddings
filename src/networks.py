@@ -11,7 +11,7 @@ import os
 import io
 from PIL import Image
 import torchvision.models as models
-from torchvision.models import ResNet18_Weights, ResNet50_Weights
+from torchvision.models import ResNet18_Weights, ResNet50_Weights, ViT_B_16_Weights
 
 # import ResNet18_Weights 
 
@@ -19,6 +19,23 @@ from torchvision.models import ResNet18_Weights, ResNet50_Weights
 # local imports
 from dataloader import SatDataset
 
+def get_visiontransformer(outputs, pretrained=True):
+    if pretrained:
+        pretrained_weights = ViT_B_16_Weights.DEFAULT
+    else:
+        pretrained_weights = None
+
+    net = models.vit_b_16(weights=pretrained_weights) # try with both pre-trained and not pre-trained ResNet model!
+
+    print(net)
+
+    num_ftrs = net.heads.head.in_features
+    print("num_ftrs", num_ftrs)
+    net.heads.head = nn.Linear(in_features=num_ftrs, out_features=outputs)
+
+    model_name = "pretrained_visiontransformer" if pretrained else "visiontransfromer"
+
+    return net, model_name, pretrained_weights.transforms() if pretrained else None
 
 def get_resnet50(outputs, pretrained=True):
     if pretrained:
@@ -31,7 +48,9 @@ def get_resnet50(outputs, pretrained=True):
     print("num_ftrs", num_ftrs)
     net.fc = nn.Linear(in_features=num_ftrs, out_features=outputs)
 
-    return net,  pretrained_weights.transforms() if pretrained else None
+    model_name = "pretrained_resnet50" if pretrained else "resnet50"
+
+    return net, model_name, pretrained_weights.transforms() if pretrained else None
 
 def get_resnet18(outputs, pretrained=True):
     if pretrained:
@@ -44,7 +63,9 @@ def get_resnet18(outputs, pretrained=True):
     print("num_ftrs", num_ftrs)
     net.fc = nn.Linear(in_features=num_ftrs, out_features=outputs)
 
-    return net,  pretrained_weights.transforms() if pretrained else None
+    model_name = "pretrained_resnet18" if pretrained else "resnet18"
+
+    return net, model_name, pretrained_weights.transforms() if pretrained else None
 
 class ConvolutionalNeuralNet(nn.Module):
     def __init__(self):

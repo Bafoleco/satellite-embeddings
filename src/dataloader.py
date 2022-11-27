@@ -31,7 +31,7 @@ def normalize(col):
 
 class SatDataset(Dataset):
 
-    def transform_output(self, output, label="price"):
+    def transform_output(self, output):
 
         transformed_output = np.zeros(output.shape)
         for i in range(output.shape[1]):
@@ -81,8 +81,6 @@ class SatDataset(Dataset):
         return len(self.labels)
 
     def __getitem__(self, i):
-        
-        # load image
         id = self.labels.iloc[i, self.labels.columns.get_loc("ID")]
 
         file_name = id.replace(",", "_") + ".png"

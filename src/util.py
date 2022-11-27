@@ -33,10 +33,10 @@ def get_model_loss(data_loader, dataset, net, loss_function):
 
     for task in dataset.tasks:
         # print r2 for task
-        x, y = pred_map[task]
+        x, y = pred_map[task.name]
         slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(x, y)
 
-        print("R2 for " + task[1] + " is " + str(r_value))
+        print("R2 for " + task.name + " is " + str(r_value))
         
     return total_loss / batches
 
