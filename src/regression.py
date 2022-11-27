@@ -7,6 +7,20 @@ import util
 import dataloader
 import tasks
 
+
+# use MOSAIKS
+
+# load using pickle
+with open('../data/int/CONTUS_UAR.pkl', 'rb') as f:
+    mosaiks_embeddings = pickle.load(f)
+
+
+    X = mosaiks_embeddings["X"]
+    ids_X = mosaiks_embeddings["ids_X"]
+
+    print(X.shape)
+
+
 # load embeddings 
 model_name = "pretrained_resnet"
 
@@ -29,3 +43,6 @@ for task in tasks.all_tasks:
     reg = LinearRegression().fit(X, y)
 
     print(reg.score(X, y))
+
+
+    
