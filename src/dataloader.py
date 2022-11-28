@@ -103,10 +103,6 @@ class EmbeddedDataset:
 
         csv = pd.read_csv(task.csv_file)
 
-        # print("csv", csv.head())
-
-        # print("keys", keys)
-
         mask = csv.apply(lambda row: row["ID"] in keys, axis=1)
 
         filtered_csv = csv[mask]
@@ -126,4 +122,25 @@ class EmbeddedDataset:
         # print("X", X)
 
         self.X = X
-        self.y = y
+        self.y = y[:,0]
+
+
+    # TODO shuffling, but like deterministic shuffling
+    # train valid test split
+    def split(self, train_size=0.8, valid_size=0.1, test_size=0.1):
+        assert train_size + test_size + valid_size == 1
+
+        train_size = int(train_size * len(self.X))
+        valid_size = int(valid_size * len(self.X))
+        test_size = len(self.X) - train_size - valid_size
+
+        train_X = self.X[:train_size]
+        train_y = self.y[:train_size]
+
+        valid_X = self.X[train_size:train_size + valid_size]
+        valid_y = self.y[train_size:train_size + valid_size]
+
+        test_X = self.X[train_size + valid_size:]
+        test_y = self.y[train_size + valid_size:]
+
+        return train_X, train_y, valid_X, valid_y, test_X, test_y

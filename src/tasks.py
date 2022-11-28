@@ -37,7 +37,7 @@ image_root = "../data/raw/mosaiks_images"
 def create_dataset_all(transfrom):
     return SatDataset(all_tasks, image_root, transfrom)
 
-def create_dataset_treecover(transfrom):
+def create_dataset_treecover(transfrom, image_root="../data/raw/mosaiks_images"):
     return SatDataset([treecover_task], image_root, transfrom)
 
 def create_dataset_income(transfrom):

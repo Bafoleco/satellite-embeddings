@@ -6,6 +6,7 @@ import torchvision.models as models
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
+from torchvision.models import ResNet18_Weights, ResNet50_Weights, ViT_B_16_Weights
 
 import util, networks, tasks
 
@@ -20,7 +21,6 @@ def get_input_features(temp_features):
         temp_features[FEATURE_KEY] = input[0].detach()
     return hook
 
-
 def embed_images(model):
     temp_features = {}
     embeddings = {}
@@ -28,13 +28,12 @@ def embed_images(model):
     for child in model.children():
         last_layer = child
 
-    print(last_layer)
-
     # we must always apply hook to last hidden layer
     last_layer.register_forward_hook(get_input_features(temp_features))
 
-    # TODO use right transform 
-    dataset = tasks.create_dataset_treecover(None)
+    # TODO use right transform - this is now for vision - change for resnet!
+    transform = ViT_B_16_Weights.DEFAULT.transforms()
+    dataset = tasks.create_dataset_treecover(transform, image_root="../data/raw/eval_images")
     data_loader = torch.utils.data.DataLoader(dataset, batch_size=64, shuffle=True, num_workers=2)
 
     with torch.no_grad():
@@ -50,7 +49,7 @@ def embed_images(model):
 
     return embeddings
 
-model_name = "pretrained_resnet"
+model_name = "pretrained_visiontransformer"
 model = torch.load("./models/" + model_name + ".pth")
 
 embeddings = embed_images(model)
