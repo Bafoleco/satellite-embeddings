@@ -7,12 +7,9 @@ import util
 import dataloader
 import tasks
 
-
 # use MOSAIKS
 
 # load using pickle
-
-
 
 def mosaiks_format_to_map(X, ids_X):
     """
