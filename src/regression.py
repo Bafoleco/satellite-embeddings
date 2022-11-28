@@ -1,6 +1,9 @@
 import scipy.stats
 import numpy as np
 from sklearn.linear_model import LinearRegression, Ridge
+from sklearn.model_selection import cross_val_score
+from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_squared_error
 
 import pickle
 import util
@@ -22,7 +25,6 @@ def mosaiks_format_to_map(X, ids_X, embeddings, dim=2048):
             mosaiks_map[ids_X[i]] = X[i][:dim]
     return mosaiks_map
 
-
 def train_and_eval(train_X, train_y, eval_X, eval_y):
     """
     Train and evaluate a linear regression model
@@ -30,6 +32,12 @@ def train_and_eval(train_X, train_y, eval_X, eval_y):
     model = Ridge(0.01).fit(train_X, train_y)
     score = model.score(eval_X, eval_y)
     print("Score: " + str(score))
+    print("Cross Validation Score: " + str(cross_val_score(model, eval_X, eval_y, cv=5)))
+
+    y_pred = model.predict(eval_X)
+    print("Mean Absolute Error: ", mean_absolute_error(eval_y, y_pred))
+    print("Mean Squared Error: ", mean_squared_error(eval_y, y_pred))
+
     return score
 
 if __name__ == "__main__":

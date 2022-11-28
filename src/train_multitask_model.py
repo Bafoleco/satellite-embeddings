@@ -42,6 +42,8 @@ testloader = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffl
 valloader = torch.utils.data.DataLoader(val_set, batch_size=batch_size, shuffle=False, num_workers=num_workers)
 
 criterion = nn.MSELoss()
+# TODO: Add random hyperparameter search to optimize the learning rate
+# and weight decay
 optimizer = torch.optim.Adam(net.parameters(), lr=0.00001, weight_decay=0.001)
 
 # setup for GPU training
