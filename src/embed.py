@@ -49,7 +49,7 @@ def embed_images(model):
 
     return embeddings
 
-model_name = "pretrained_visiontransformer"
+model_name = "pretrained_visiontransformer_ElInPoRdTrNl"
 model = torch.load("./models/" + model_name + ".pth")
 
 embeddings = embed_images(model)

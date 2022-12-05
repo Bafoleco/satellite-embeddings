@@ -7,10 +7,6 @@ import util
 import dataloader
 import tasks
 
-# use MOSAIKS
-
-# load using pickle
-
 def mosaiks_format_to_map(X, ids_X):
     """
     Convert the mosaiks format to a map
@@ -19,7 +15,6 @@ def mosaiks_format_to_map(X, ids_X):
     for i in range(len(ids_X)):
         mosaiks_map[ids_X[i]] = X[i]
     return mosaiks_map
-
 
 def train_and_eval(train_X, train_y, eval_X, eval_y):
     """
