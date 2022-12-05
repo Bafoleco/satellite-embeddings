@@ -15,6 +15,11 @@ from dataloader import SatDataset
 from networks import ConvolutionalNeuralNet, Net
 import util, networks, tasks
 
+#####
+#####
+
+# set batch_size and number of workers
+batch_size = 64 # TODO: Reason through batch size
 num_workers = 2
 
 def train_model(net, trainloader, valloader, testloader, num_epochs, learning_rate, model_name, batchsize, save_model=True):

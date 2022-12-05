@@ -1,4 +1,5 @@
 from dataloader import SatDataset
+import random
 
 base = "../data/int/applications"
 uar_elevation_csv = base + "/elevation/outcomes_sampled_elevation_CONTUS_16_640_UAR_100000_0.csv"
@@ -44,3 +45,17 @@ def create_dataset_treecover(transfrom, image_root="../data/raw/mosaiks_images")
 
 def create_dataset_income(transfrom):
     return SatDataset([income_task], image_root, transfrom)
+
+# three random tasks chosen: elevation, roads, treecover
+def create_dataset_three(transfrom):
+    return SatDataset([treecover_task, elevation_task, roads_task], image_root, transfrom)
+
+# four random tasks chosen: elevation, roads, income, nightlights
+def create_dataset_four(transfrom):
+    return SatDataset([elevation_task, roads_task, income_task, nightlights_task], image_root, transfrom)
+
+def create_dataset_ablation(transfrom, hold_out_task_name):
+    tasks = all_tasks.copy()
+    hold_out_task = task_name_map[hold_out_task_name]
+    tasks.remove(hold_out_task)
+    return SatDataset(tasks, image_root, transfrom)
