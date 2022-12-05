@@ -21,7 +21,6 @@ def image_present(root_dir, indices):
     file_name = str(i) + "_" + str(j) + ".png"
     return os.path.exists(os.path.join(root_dir, file_name))
 
-
 def normalize(col):
     col_mean = col.mean()
     col_std = col.std()
@@ -91,6 +90,12 @@ class SatDataset(Dataset):
  
         return [self.transform(image), labels, id]
 
+    def get_task_code(self):
+        code = ""
+        for task in self.tasks:
+            code += task.code
+        return code
+        
 class EmbeddedDataset:
 
     def __init__(self, embeddings, task):

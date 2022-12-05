@@ -16,21 +16,23 @@ treecover_col_title = "treecover"
 nightlights_col_title = "y"
 
 class Task:
-    def __init__(self, name, display_name, csv_file, col_name):
+    def __init__(self, name, display_name, csv_file, col_name, code):
         self.name = name
         self.display_name = display_name
         self.csv_file = csv_file
         self.col_name = col_name
+        self.code = code
 
-elevation_task = Task("elevation", "Elevation", uar_elevation_csv, elevation_col_title)
-income_task = Task("income", "Income", uar_income_csv, income_col_title)
-population_task = Task("population", "Population", uar_population_csv, population_col_title)
-roads_task = Task("roads", "Roads", uar_roads_csv, roads_col_title)
-treecover_task = Task("treecover", "Tree Cover", uar_treecover_csv, treecover_col_title)
-nightlights_task = Task("nightlights", "Nightlights", uar_nightlights_csv, nightlights_col_title)
+elevation_task = Task("elevation", "Elevation", uar_elevation_csv, elevation_col_title, "El")
+income_task = Task("income", "Income", uar_income_csv, income_col_title, "In")
+population_task = Task("population", "Population", uar_population_csv, population_col_title, "Po")
+roads_task = Task("roads", "Roads", uar_roads_csv, roads_col_title, "Rd")
+treecover_task = Task("treecover", "Tree Cover", uar_treecover_csv, treecover_col_title, "Tr")
+nightlights_task = Task("nightlights", "Nightlights", uar_nightlights_csv, nightlights_col_title, "Nl")
 
 all_tasks = [elevation_task, income_task, population_task, roads_task, treecover_task, nightlights_task]
-task_map = {task.name: task for task in all_tasks}
+task_name_map = {task.name: task for task in all_tasks}
+task_code_map = {task.code: task for task in all_tasks}
 
 image_root = "../data/raw/mosaiks_images"
 
