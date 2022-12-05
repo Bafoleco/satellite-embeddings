@@ -8,8 +8,17 @@ import torchvision.models as models
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy
+import os 
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
+def image_present(root_dir, indices):
+    ij = indices.split(",")
+    i = ij[0]
+    j = ij[1]
+
+    file_name = str(i) + "_" + str(j) + ".png"
+    return os.path.exists(os.path.join(root_dir, file_name))
 
 def get_embedding_filename(model_name):
     return model_name + "_embeddings.pkl"

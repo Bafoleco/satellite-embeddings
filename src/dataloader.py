@@ -13,21 +13,12 @@ base_transform = transforms.Compose( # composing several transforms together
      transforms.ToTensor(), # to tensor object
      transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]) # mean = 0.5, std = 0.5
 
-def image_present(root_dir, indices):
-    ij = indices.split(",")
-    i = ij[0]
-    j = ij[1]
-
-    file_name = str(i) + "_" + str(j) + ".png"
-    return os.path.exists(os.path.join(root_dir, file_name))
-
 def normalize(col):
     col_mean = col.mean()
     col_std = col.std()
     norm_col = (col - col_mean) / col_std
     return norm_col, (col_mean, col_std)
     
-
 class SatDataset(Dataset):
 
     def transform_output(self, output):
@@ -54,7 +45,7 @@ class SatDataset(Dataset):
             print(task)               
             csv = pd.read_csv(task.csv_file)
 
-            mask = csv.apply(lambda row: image_present(root_dir, row["ID"]), axis=1)
+            mask = csv.apply(lambda row: util.image_present(root_dir, row["ID"]), axis=1)
 
             filtered_csv = csv[mask]
 
@@ -100,7 +91,7 @@ class EmbeddedDataset:
 
     def __init__(self, embeddings, task):
 
-        print("init embedded dataset")
+        # print("init embedded dataset")
 
         # get key set of embeddings
         keys = set(embeddings.keys())
