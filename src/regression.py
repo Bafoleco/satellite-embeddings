@@ -10,16 +10,7 @@ import util
 import dataloader
 import tasks
 import util
-
-def mosaiks_format_to_map(X, ids_X, embeddings, dim=2048):
-    """
-    Convert the mosaiks format to a map
-    """
-    mosaiks_map = {}
-    for i in range(len(ids_X)):
-        if ids_X[i] in embeddings:
-            mosaiks_map[ids_X[i]] = X[i][:dim]
-    return mosaiks_map
+import embedding_utils
 
 def train_and_eval(train_X, train_y, eval_X, eval_y):
     """
@@ -38,7 +29,9 @@ def train_and_eval(train_X, train_y, eval_X, eval_y):
 
 if __name__ == "__main__":
     # load embeddings 
-    model_name = "pretrained_resnet"
+    model_name = "pretrained_visiontransformer_ElInPoRdTrNl"
+
+    training_tasks = embedding_utils.parse_tasks(model_name)
 
     with open('./embeddings/' + util.get_embedding_filename(model_name), 'rb') as f:
         embeddings = pickle.load(f)
@@ -47,7 +40,7 @@ if __name__ == "__main__":
         mosaiks_embeddings = pickle.load(f)
         X = mosaiks_embeddings["X"]
         ids_X = mosaiks_embeddings["ids_X"]
-        mosaiks_embeddings = mosaiks_format_to_map(X, ids_X, embeddings)
+        mosaiks_embeddings = embedding_utils.mosaiks_format_to_map(X, ids_X, embeddings)
 
     for task in tasks.all_tasks:
         print("Comparing on ", task.name)

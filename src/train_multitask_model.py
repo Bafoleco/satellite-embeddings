@@ -15,33 +15,9 @@ from dataloader import SatDataset
 from networks import ConvolutionalNeuralNet, Net
 import util, networks, tasks
 
-#####
-#####
-
-# set batch_size and number of workers
-batch_size = 64
 num_workers = 2
 
-# initialize network
-net, model_name, transfrom = networks.get_visiontransformer(6, pretrained=True)
-
-print("Num Params - Total, Trainable")
-
-pytorch_total_params = sum(p.numel() for p in net.parameters())
-print(pytorch_total_params)
-
-pytorch_trainable_params = sum(p.numel() for p in net.parameters() if p.requires_grad)
-print(pytorch_trainable_params)
-
-# load train data
-dataset = tasks.create_dataset_all(transfrom)
-
-train_set, val_set, test_set = torch.utils.data.random_split(dataset, [8000, 1000, 1000])
-trainloader = torch.utils.data.DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=num_workers)
-testloader = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffle=False, num_workers=num_workers)
-valloader = torch.utils.data.DataLoader(val_set, batch_size=batch_size, shuffle=False, num_workers=num_workers)
-
-def train_model(net, trainloader, valloader, testloader, num_epochs, learning_rate, model_name, save_model=True):
+def train_model(net, trainloader, valloader, testloader, num_epochs, learning_rate, model_name, batchsize, save_model=True):
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate, weight_decay=0.001)
 
@@ -82,7 +58,6 @@ def train_model(net, trainloader, valloader, testloader, num_epochs, learning_ra
                 avg = running_loss / 10
                 running_loss = 0.0
                 
-
         val_loss = get_model_loss(valloader, dataset, net, criterion)
 
         print("Validation loss: " + str(val_loss))
@@ -96,7 +71,6 @@ def train_model(net, trainloader, valloader, testloader, num_epochs, learning_ra
         plt.legend()
         plt.savefig("loss.png")
 
-
     end.record()
 
     # Waits for everything to finish running
@@ -109,8 +83,5 @@ def train_model(net, trainloader, valloader, testloader, num_epochs, learning_ra
     graph_performance(valloader, dataset, net)
 
     # save model
-
     name = model_name + "_" + dataset.get_task_code()
-
-    # TODO conside save state_dict approach
     torch.save(net, "./models/" + name + ".pth")

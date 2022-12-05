@@ -11,13 +11,32 @@ import os
 import io
 from PIL import Image
 import torchvision.models as models
-from torchvision.models import ResNet18_Weights, ResNet50_Weights, ViT_B_16_Weights
+from torchvision.models import ResNet18_Weights, ResNet50_Weights, ViT_B_16_Weights, ViT_B_32_Weights, ViT_L_32_Weights, Wide_ResNet101_2_Weights
 
 # import ResNet18_Weights 
 
 
 # local imports
 from dataloader import SatDataset
+
+def get_visiontransformerb32(outputs, pretrained=True):
+    if pretrained:
+        pretrained_weights = Wide_ResNet101_2_Weights.DEFAULT
+    else:
+        pretrained_weights = None
+
+    net = models.vgg13(weights=pretrained_weights) # try with both pre-trained and not pre-trained ResNet model!
+
+    print(net)
+
+    num_ftrs = net.heads.head.in_features
+    print("num_ftrs", num_ftrs)
+    net.heads.head = nn.Linear(in_features=num_ftrs, out_features=outputs)
+
+    model_name = "pretrained_visiontransformerb32" if pretrained else "visiontransfromerb32"
+
+    return net, model_name, pretrained_weights.transforms() if pretrained else None
+
 
 def get_visiontransformer(outputs, pretrained=True):
     if pretrained:
@@ -117,3 +136,6 @@ class Net(nn.Module):
         # print("returning")
         # print(x.shape)
         return x
+
+if __name__ == "__main__":
+    get_visiontransformerb32(1, pretrained=False)
