@@ -5,6 +5,7 @@ import pandas as pd
 import os
 from PIL import Image
 import numpy as np
+import util
 
 # python image library of range [0, 1] 
 # transform them to tensors of normalized range[-1, 1]
@@ -41,8 +42,9 @@ class SatDataset(Dataset):
 
         df = pd.DataFrame()
         
-        for task in tasks: 
-            print(task)               
+        for task in tasks:
+            print("Root dir ", root_dir)
+            print("Adding images for task ", task.name)               
             csv = pd.read_csv(task.csv_file)
 
             mask = csv.apply(lambda row: util.image_present(root_dir, row["ID"]), axis=1)
@@ -90,9 +92,7 @@ class SatDataset(Dataset):
 class EmbeddedDataset:
 
     def __init__(self, embeddings, task):
-
         # print("init embedded dataset")
-
         # get key set of embeddings
         keys = set(embeddings.keys())
         dim = len(embeddings[next(iter(keys))])

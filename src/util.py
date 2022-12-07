@@ -49,8 +49,7 @@ def get_model_loss(data_loader, dataset, net, loss_function):
         
     return total_loss / batches
 
-
-def graph_performance(data_loader, dataset, net):
+def graph_performance(plot_dir, data_loader, dataset, net):
     pred_map = init_pred_map(dataset)
 
     with torch.no_grad():
@@ -60,7 +59,7 @@ def graph_performance(data_loader, dataset, net):
             save_predictions(dataset, labels, outputs, pred_map)
 
     for task in dataset.tasks:
-        draw_graph(task, pred_map)
+        draw_graph(plot_dir, task, pred_map)
 
 def init_pred_map(dataset):
     tasks = dataset.tasks
@@ -80,15 +79,19 @@ def save_predictions(dataset, labels, outputs, scatter_data):
             x.append(predictions[j][i])
             y.append(true[j][i])
 
-def draw_graph(task, scatter_data):
+def draw_graph(plot_dir, task, scatter_data):
     x, y = scatter_data[task.name]
     plt.close()
     plt.scatter(x, y)
     plt.xlabel("true")
     plt.ylabel("predicted")
     plt.title(task.display_name)
-    plt.savefig("plots/" + task.name + ".png")
 
+    # If the plot directory doesn't exist, make it
+    if (not os.path.exists(plot_dir)):
+        os.mkdir(plot_dir)
+
+    plt.savefig(plot_dir + task.name + ".png")
 
 def get_percent_error(outputs, labels):
     # print(outputs.shape)
