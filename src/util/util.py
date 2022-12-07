@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy
 import os 
+from pathlib import Path
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -98,3 +99,18 @@ def get_percent_error(outputs, labels):
     # print(labels.shape)
 
     return np.average(np.abs(outputs - labels) / labels) * 100
+
+source_path = Path(__file__).resolve()
+source_dir = source_path.parent
+
+def get_models_path():
+    return os.path.join(source_dir.parent, "out", "models")
+
+def get_embeddings_path():
+    return os.path.join(source_dir.parent, "out", "embeddings")
+
+def get_data_path():
+    return os.path.join(source_dir.parent.parent, "data")
+
+def get_eval_images_path():
+    return os.path.join(get_data_path(), "raw", "eval_images")
