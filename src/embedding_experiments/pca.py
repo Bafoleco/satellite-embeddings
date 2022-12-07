@@ -31,7 +31,6 @@ def plot_pca(X, name):
     plt.xlabel("Component")
     plt.ylabel("Explained Variance Ratio")
 
-
     plt.savefig("embedding_experiments/plots/" + name + "_pca" + ".png")
 
     plt.close()

@@ -1,7 +1,7 @@
 from dataloader import SatDataset
 import random
 
-base = "../../data/int/applications"
+base = "../data/int/applications"
 uar_elevation_csv = base + "/elevation/outcomes_sampled_elevation_CONTUS_16_640_UAR_100000_0.csv"
 uar_income_csv = base + "/income/outcomes_sampled_income_CONTUS_16_640_UAR_100000_0.csv"
 uar_population_csv = base + "/population/outcomes_sampled_population_CONTUS_16_640_UAR_100000_0.csv"
