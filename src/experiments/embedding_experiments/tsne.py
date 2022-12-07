@@ -8,13 +8,13 @@ import pandas as pd
 import pickle
 import matplotlib.pyplot as plt
 
-sys.path.append('../src')
+sys.path.append('../../')
 
-import embedding_utils
-import util
-import dataloader
-from tasks import Task, elevation_task, roads_task
-from dataloader import EmbeddedDataset
+import util.embedding_utils as embedding_utils
+import util.util as util
+import dataset.dataloader as dataloader
+from dataset.tasks import Task, elevation_task, roads_task
+from dataset.dataloader import EmbeddedDataset
 
 def plot_tsne(dataset, name):
     tsne = TSNE(n_components=2, verbose=1, perplexity=40, n_iter=300)
@@ -51,16 +51,16 @@ def plot_tsne(dataset, name):
         alpha=0.3
     )
 
-    sns_plot.figure.savefig("plots/tsne_elevation.png")
+    sns_plot.figure.savefig("plots/tsne_mosaiks_elevation.png")
 
 if __name__ == "__main__":
     # load embeddings 
     model_name = "pretrained_visiontransformer_ElInPoRdTrNl"
 
-    with open('./embeddings/' + util.get_embedding_filename(model_name), 'rb') as f:
+    with open('../../out/embeddings/' + util.get_embedding_filename(model_name), 'rb') as f:
         embeddings = pickle.load(f)
 
-    with open('../data/int/CONTUS_UAR.pkl', 'rb') as f:
+    with open('./../../../data/int/CONTUS_UAR.pkl', 'rb') as f:
         mosaiks_embeddings = pickle.load(f)
         X = mosaiks_embeddings["X"]
         ids_X = mosaiks_embeddings["ids_X"]
@@ -68,6 +68,9 @@ if __name__ == "__main__":
 
     embedded_dataset_elevation = EmbeddedDataset(embeddings, elevation_task)
 
-    plot_tsne(embedded_dataset_elevation, "embeddings elevation")
+    embedded_dataset_mosaiks_elevation = EmbeddedDataset(mosaiks_embeddings, elevation_task)
 
-#    plot_tsne(mosaiks_embeddings, "mosaiks_embeddings")
+# Plot already generated: stored in plots/tsne_elevation.png
+#    plot_tsne(embedded_dataset_elevation, "embeddings elevation")
+
+    plot_tsne(embedded_dataset_mosaiks_elevation, "mosaiks_embeddings")

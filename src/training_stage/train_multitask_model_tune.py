@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt # for plotting
 import numpy as np
-from util import get_model_loss, get_percent_error, graph_performance # for transformation
+from util.util import get_model_loss, get_percent_error, graph_performance # for transformation
 import os
 from sklearn.model_selection import RandomizedSearchCV
 
@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 
 # local imports
 from dataset.dataloader import SatDataset
-from networks import ConvolutionalNeuralNet, Net
+from training_stage.networks import ConvolutionalNeuralNet, Net
 
 from ray import tune
 

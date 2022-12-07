@@ -3,11 +3,11 @@
 # NOTE: Run all experiments from within the ablation_experiments folder.
 
 import sys
-sys.path.insert(1, '../')
+sys.path.insert(1, '../../')
 from random import randint
 
 import training_stage.train_multitask_model_tune as train_multitask_model_tune
-import util, networks, tasks
+import util.util as util, training_stage.networks as networks, dataset.tasks as tasks
 import torch
 from scipy.stats import truncnorm
 # print winning set of hyperparameters
@@ -54,11 +54,12 @@ dataset_treecover = tasks.create_dataset_ablation(transfrom, 'treecover', '../..
 torch.manual_seed(0)
 
 print("Length of elevation dataset: ", len(dataset_elevation))
+# note: why is the elevation dataset of length 9234? Shouldn't it be 10000?
 
-dataset_all = tasks.create_dataset_all(transfrom, '../../data/raw/mosaiks_images')
-print("Length of all dataset: ", len(dataset_all))
+#dataset_all = tasks.create_dataset_all(transfrom, '../../data/raw/mosaiks_images')
+#print("Length of all dataset: ", len(dataset_all))
 
-train_set, val_set, test_set = torch.utils.data.random_split(dataset_elevation, [8000, 1000, 1000])
+train_set, val_set, test_set = torch.utils.data.random_split(dataset_elevation, [8000, 1000, 234])
 trainloader = torch.utils.data.DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=num_workers)
 testloader = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffle=False, num_workers=num_workers)
 valloader = torch.utils.data.DataLoader(val_set, batch_size=batch_size, shuffle=False, num_workers=num_workers)
@@ -70,11 +71,11 @@ num_epochs = 10
 # train_model(dataset, net, trainloader, valloader, testloader, num_epochs, learning_rate, model_name, batchsize, save_model=True)
 
 plot_dir = "plots/"
-model_dir = "models/"
+model_dir = "../../out/embeddings/"
 
 analysis = tune.run(
     train_multitask_model_tune.train_model,
-    config={"lr": tune.grid_search([0.001, 0.01, 0.1]), "batch_size": tune.randint(1, 100),
+    config={"lr": tune.grid_search([0.0001, 0.001, 0.01]), "batch_size": tune.randint(1, 100),
     "dataset": dataset_elevation,
     "net": net,
     "trainloader": trainloader,

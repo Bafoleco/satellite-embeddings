@@ -60,7 +60,7 @@ def create_dataset_three(transfrom):
 def create_dataset_four(transfrom):
     return SatDataset([elevation_task, roads_task, income_task, nightlights_task], image_root, transfrom)
 
-def create_dataset_ablation(transfrom, hold_out_task_name):
+def create_dataset_ablation(transfrom, hold_out_task_name, root_dir):
     tasks = all_tasks.copy()
     hold_out_task = task_name_map[hold_out_task_name]
     tasks.remove(hold_out_task)
