@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt # for plotting
 import numpy as np
 from util import get_model_loss, get_percent_error, graph_performance # for transformation
+import os
+from sklearn.model_selection import RandomizedSearchCV
 
 import torch # PyTorch package
 import torch.nn as nn # basic building block for neural neteorks
@@ -15,16 +17,39 @@ from dataloader import SatDataset
 from networks import ConvolutionalNeuralNet, Net
 import util, networks, tasks
 
+from ray import tune
+
 #####
 #####
 
 # set batch_size and number of workers
-batch_size = 64 # TODO: Reason through batch size
+batch_size = 64
 num_workers = 2
 
-def train_model(net, trainloader, valloader, testloader, num_epochs, learning_rate, model_name, batchsize, save_model=True):
+#     config={"lr": tune.grid_search([0.001, 0.01, 0.1]), "batch_size": tune.randint(1, 100),
+#    "dataset": dataset_elevation,
+ #   "net": net,
+ #   "trainloader": trainloader,
+ #   "testloader": testloader,
+ #   "num_epochs": 10,
+ #   "model_name": model_name,
+ #   "plot_dir": plot_dir,
+ #   "model_dir": model_dir,
+ #   save_model = True})
+
+def train_model(config, checkpoint_dir = None):
+    net = config['net']
+    save_model = config['save_model']
+    dataset = config['dataset']
+    trainloader = config['trainloader']
+    testloader = config['testloader']
+    num_epochs = config['num_epochs']
+    model_name = config['model_name']
+    plot_dir = config['plot_dir']
+    model_dir = config['model_dir']
+
     criterion = nn.MSELoss()
-    optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate, weight_decay=0.001)
+    optimizer = torch.optim.Adam(net.parameters(), lr=config['lr'], weight_decay=0.001)
 
     # setup for GPU training
     print("CUDA status: ", torch.cuda.is_available())
@@ -64,7 +89,7 @@ def train_model(net, trainloader, valloader, testloader, num_epochs, learning_ra
                 running_loss = 0.0
                 
         val_loss = get_model_loss(valloader, dataset, net, criterion)
-
+        tune.report(val_loss=val_loss)
         print("Validation loss: " + str(val_loss))
         x.append(epoch)
         val_losses.append(val_loss)
@@ -74,7 +99,11 @@ def train_model(net, trainloader, valloader, testloader, num_epochs, learning_ra
         plt.scatter(x, val_losses, label="Validation Loss")
         plt.scatter(x, train_losses, label="Training Loss")
         plt.legend()
-        plt.savefig("loss.png")
+
+        if (not os.path.exists(plot_dir)):
+            os.mkdir(plot_dir)
+
+        plt.savefig(plot_dir + model_name + "loss.png")
 
     end.record()
 
@@ -85,8 +114,12 @@ def train_model(net, trainloader, valloader, testloader, num_epochs, learning_ra
     net.eval()
 
     # graphing performance
-    graph_performance(valloader, dataset, net)
+    graph_performance(plot_dir, valloader, dataset, net)
 
     # save model
     name = model_name + "_" + dataset.get_task_code()
-    torch.save(net, "./models/" + name + ".pth")
+
+    if (not os.path.exists(model_dir)):
+        os.makedirs(model_dir)
+        
+    torch.save(net, model_dir + name + ".pth")

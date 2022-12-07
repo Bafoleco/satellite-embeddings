@@ -33,6 +33,8 @@ print(pytorch_trainable_params)
 # load train data
 dataset = tasks.create_dataset_all(transfrom)
 
+torch.manual_seed(0)
+
 train_set, val_set, test_set = torch.utils.data.random_split(dataset, [8000, 1000, 1000])
 trainloader = torch.utils.data.DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=num_workers)
 testloader = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffle=False, num_workers=num_workers)

@@ -1,7 +1,7 @@
 from dataloader import SatDataset
 import random
 
-base = "../data/int/applications"
+base = "../../data/int/applications"
 uar_elevation_csv = base + "/elevation/outcomes_sampled_elevation_CONTUS_16_640_UAR_100000_0.csv"
 uar_income_csv = base + "/income/outcomes_sampled_income_CONTUS_16_640_UAR_100000_0.csv"
 uar_population_csv = base + "/population/outcomes_sampled_population_CONTUS_16_640_UAR_100000_0.csv"
@@ -37,7 +37,7 @@ task_code_map = {task.code: task for task in all_tasks}
 
 image_root = "../data/raw/mosaiks_images"
 
-def create_dataset_all(transfrom):
+def create_dataset_all(transfrom, image_root='../data/raw/mosaiks_images'):
     return SatDataset(all_tasks, image_root, transfrom)
 
 def create_dataset_treecover(transfrom, image_root="../data/raw/mosaiks_images"):
@@ -46,16 +46,14 @@ def create_dataset_treecover(transfrom, image_root="../data/raw/mosaiks_images")
 def create_dataset_income(transfrom):
     return SatDataset([income_task], image_root, transfrom)
 
-# three random tasks chosen: elevation, roads, treecover
-def create_dataset_three(transfrom):
-    return SatDataset([treecover_task, elevation_task, roads_task], image_root, transfrom)
+# four tasks chosen: treecover, elevation, roads, nightlights
 
-# four random tasks chosen: elevation, roads, income, nightlights
-def create_dataset_four(transfrom):
-    return SatDataset([elevation_task, roads_task, income_task, nightlights_task], image_root, transfrom)
+def create_dataset_ablation(transfrom, hold_out_task_name = None, image_root='../data/raw/mosaiks_images'):
+    # Randomly chosen tasks
+    tasks = [elevation_task, roads_task, income_task, treecover_task]
 
-def create_dataset_ablation(transfrom, hold_out_task_name):
-    tasks = all_tasks.copy()
-    hold_out_task = task_name_map[hold_out_task_name]
-    tasks.remove(hold_out_task)
+    if hold_out_task_name:
+        hold_out_task = task_name_map[hold_out_task_name]
+        tasks.remove(hold_out_task)
+
     return SatDataset(tasks, image_root, transfrom)
