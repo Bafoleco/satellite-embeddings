@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 sys.path.append('../src')
 
 import util.embedding_utils as embedding_utils
-import util
+import util.util as util
 
 
 def interpolate(start, end, embeddings, steps=15, mosaiks=False):

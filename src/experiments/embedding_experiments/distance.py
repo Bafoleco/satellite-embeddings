@@ -56,7 +56,7 @@ if __name__ == "__main__":
     # load embeddings 
     model_name = "pretrained_resnet"
 
-    with open('../../embeddings/' + util.get_embedding_filename(model_name), 'rb') as f:
+    with open('../../out/embeddings/' + util.get_embedding_filename(model_name), 'rb') as f:
         embeddings = pickle.load(f)
 
     with open('../../../data/int/CONTUS_UAR.pkl', 'rb') as f:
