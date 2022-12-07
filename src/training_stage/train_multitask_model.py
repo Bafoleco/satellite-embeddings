@@ -17,9 +17,9 @@ from util.util import get_model_loss, get_percent_error, graph_performance
 source_path = Path(__file__).resolve()
 source_dir = source_path.parent
 
-def train_model(dataset, net, trainloader, valloader, testloader, num_epochs, learning_rate, model_name, save_model=True):
+def train_model(dataset, net, trainloader, valloader, testloader, num_epochs, learning_rate, weight_decay, model_name, save_model=True):
     criterion = nn.MSELoss()
-    optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate, weight_decay=0.003)
+    optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
     # setup for GPU training
     print("CUDA status: ", torch.cuda.is_available())

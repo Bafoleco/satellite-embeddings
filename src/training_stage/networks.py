@@ -1,6 +1,9 @@
 import matplotlib.pyplot as plt # for plotting
 import numpy as np # for transformation
 
+import sys
+sys.path.append('../')
+
 import torch # PyTorch package
 import torchvision # load datasets
 import torch.nn as nn # basic building block for neural neteorks
@@ -9,14 +12,33 @@ import torch.optim as optim # optimzer
 import pandas as pd
 from PIL import Image
 import torchvision.models as models
-from torchvision.models import ResNet18_Weights, ResNet50_Weights, ViT_B_16_Weights, ViT_B_32_Weights, ViT_L_32_Weights, Wide_ResNet101_2_Weights
+from torchvision.models import ResNet18_Weights, ResNet50_Weights, ViT_B_16_Weights, ViT_B_32_Weights, ViT_L_32_Weights, Wide_ResNet101_2_Weights, VGG13_Weights
 
 # local imports
 from dataset.dataloader import SatDataset
 
-def get_visiontransformerb32(outputs, pretrained=True):
+
+name_to_weights = {
+    "pretrained_resnet18": ResNet18_Weights.DEFAULT,
+    "pretrained_resnet50": ResNet50_Weights.DEFAULT,
+    "pretrained_visiontransformer": ViT_B_16_Weights.DEFAULT,
+    "pretrained_vit_b_32": ViT_B_32_Weights.DEFAULT,
+    "pretrained_vit_l_32": ViT_L_32_Weights.DEFAULT,
+    "pretrained_wide_resnet101_2": Wide_ResNet101_2_Weights.DEFAULT,
+    "pretrained_vgg13": VGG13_Weights.DEFAULT
+}
+
+def get_weights(name):
+    name = name[0: name.rfind("_")]
+
+    if name not in name_to_weights:
+        raise None
+
+    return name_to_weights[name]
+
+def get_vgg13(outputs, pretrained=True):
     if pretrained:
-        pretrained_weights = Wide_ResNet101_2_Weights.DEFAULT
+        pretrained_weights = VGG13_Weights.DEFAULT
     else:
         pretrained_weights = None
 
@@ -24,11 +46,24 @@ def get_visiontransformerb32(outputs, pretrained=True):
 
     print(net)
 
-    num_ftrs = net.heads.head.in_features
-    print("num_ftrs", num_ftrs)
-    net.heads.head = nn.Linear(in_features=num_ftrs, out_features=outputs)
+    # num_ftrs = net.heads.head.in_features
 
-    model_name = "pretrained_visiontransformerb32" if pretrained else "visiontransfromerb32"
+    embed_dim = 8192
+
+    embedder = nn.Sequential(
+        nn.Linear(in_features=25088, out_features=embed_dim),
+        nn.ReLU(),
+        nn.Linear(in_features=embed_dim, out_features=outputs)
+    )
+
+    print(embed_dim)
+
+    net.classifier = embedder
+
+    # print("num_ftrs", num_ftrs)
+    # net.heads.head = nn.Linear(in_features=num_ftrs, out_features=outputs)
+
+    model_name = "pretrained_vgg13" if pretrained else "vgg13"
 
     return net, model_name, pretrained_weights.transforms() if pretrained else None
 
@@ -133,4 +168,5 @@ class Net(nn.Module):
         return x
 
 if __name__ == "__main__":
-    get_visiontransformerb32(1, pretrained=False)
+    # get_visiontransformerb32(1, pretrained=False)
+    print(models.vgg13(weights=None))

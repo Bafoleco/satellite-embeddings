@@ -5,7 +5,7 @@ def mosaiks_format_to_map(X, ids_X, embeddings):
     """
     Convert the mosaiks format to a map
     """
-    dim = embeddings[embeddings.keys()[0]].shape[0]
+    dim = embeddings[list(embeddings.keys())[0]].shape[0]
 
     mosaiks_map = {}
     for i in range(len(ids_X)):

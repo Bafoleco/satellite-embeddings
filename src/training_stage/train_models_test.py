@@ -9,13 +9,13 @@ import training_stage.train_multitask_model as train_multitask_model
 
 # set batch_size and number of workers
 batch_size = 64
-num_workers = 2
+num_workers = 4
 
 # initialize network
-net, model_name, transfrom = networks.get_visiontransformer(6, pretrained=True)
+net, model_name, transfrom = networks.get_visiontransformer(4, pretrained=True)
 
 # load train data
-dataset = tasks.create_dataset_all(transfrom)
+dataset = tasks.create_dataset_four(transfrom)
 
 # get length of train and valid
 train_len = int(0.8 * len(dataset))
@@ -28,4 +28,4 @@ testloader = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffl
 valloader = torch.utils.data.DataLoader(val_set, batch_size=batch_size, shuffle=False, num_workers=num_workers)
 
 # train model
-train_multitask_model.train_model(dataset, net, trainloader, valloader, testloader, 1, 0.00005, model_name, batch_size)
+train_multitask_model.train_model(dataset, net, trainloader, valloader, testloader, 5, 0.0001, 0.001, model_name, batch_size)

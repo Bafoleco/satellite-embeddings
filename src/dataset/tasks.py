@@ -14,6 +14,7 @@ uar_population_csv = base + "/population/outcomes_sampled_population_CONTUS_16_6
 uar_roads_csv = base + "/roads/outcomes_sampled_roads_CONTUS_16_640_UAR_100000_0.csv"
 uar_treecover_csv = base + "/treecover/outcomes_sampled_treecover_CONTUS_16_640_UAR_100000_0.csv"
 uar_nightlights_csv = base + "/nightlights/outcomes_sampled_nightlights_CONTUS_16_640_UAR_100000_0.csv"
+uar_housing_csv = base + "/housing/outcomes_sampled_housing_CONTUS_16_640_UAR_100000_0.csv"
 
 elevation_col_title = "elevation"
 income_col_title = "income"
@@ -46,7 +47,7 @@ image_root = os.path.join(source_dir,  "../../data/raw/mosaiks_images")
 def create_dataset_all(transfrom):
     return SatDataset(all_tasks, image_root, transfrom)
 
-def create_dataset_treecover(transfrom):
+def create_dataset_treecover(transfrom, image_root=image_root):
     return SatDataset([treecover_task], image_root, transfrom)
 
 def create_dataset_income(transfrom):
