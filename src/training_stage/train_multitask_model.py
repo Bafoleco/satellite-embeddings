@@ -80,7 +80,7 @@ def train_model(dataset, net, trainloader, valloader, testloader, num_epochs, le
     net.eval()
 
     # graphing performance
-    graph_performance("./plots", valloader, dataset, net)
+    graph_performance("./plots/", valloader, dataset, net)
 
     # save model
     name = model_name + "_" + dataset.get_task_code()
