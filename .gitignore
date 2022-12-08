@@ -5,3 +5,6 @@ models/
 embeddings/
 out/
 out
+/data
+!/data/
+data

@@ -18,7 +18,7 @@ num_workers = 2
 
 # initialize network
 
-num_tasks = 4
+num_tasks = 3
 
 net, model_name, transfrom = networks.get_visiontransformer(num_tasks, pretrained=True)
 
@@ -32,7 +32,6 @@ print(pytorch_trainable_params)
 
 # load train data
 dataset_allfour = tasks.create_dataset_ablation(transfrom)
-
 dataset_elevation = tasks.create_dataset_ablation(transfrom, 'elevation')
 dataset_income = tasks.create_dataset_ablation(transfrom, 'income')
 dataset_roads = tasks.create_dataset_ablation(transfrom, 'roads')
@@ -40,8 +39,6 @@ dataset_treecover = tasks.create_dataset_ablation(transfrom, 'treecover')
 
 #dataset_four = tasks.create_dataset_four(transfrom, '../../data/raw/mosaiks_images')
 torch.manual_seed(0)
-
-print("Length of elevation dataset: ", len(dataset_elevation))
 
 dataset = dataset_allfour
 
@@ -56,9 +53,9 @@ valloader = torch.utils.data.DataLoader(val_set, batch_size=batch_size, shuffle=
 
 batch_size = 64
 learning_rate = 0.00001
-num_epochs = 3
+num_epochs = 5
 weight_decay = 0.01
 
-model_name += "lr_" + str(learning_rate).replace('.','') + "wd_" + str(weight_decay).replace('.','')
+model_name += "num_epochs=" + str(num_epochs)
 
 train_multitask_model.train_model(dataset, net, trainloader, valloader, testloader, num_epochs, learning_rate, weight_decay, model_name, batch_size)

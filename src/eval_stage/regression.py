@@ -35,7 +35,8 @@ def train_and_eval(train_X, train_y, eval_X, eval_y, taskname, dir):
     print("Train size: ", len(train_X))
     print("Dimensions: ", len(train_X[0]))
 
-    model = Ridge(0.08).fit(train_X, train_y)
+    # TODO: Train ridge regression
+    model = Ridge(0.04).fit(train_X, train_y) # TODO: Hyperparameter tune Ridge Regression
     score = model.score(eval_X, eval_y)
     print("Score: " + str(score))
     # print("Cross Validation Score: " + str(cross_val_score(model, eval_X, eval_y, cv=5)))
@@ -51,7 +52,7 @@ def train_and_eval(train_X, train_y, eval_X, eval_y, taskname, dir):
 
 if __name__ == "__main__":
     # load embeddings 
-    model_name = "pretrained_resnet"
+    model_name = "pretrained_visiontransformer_RdInTr"
 
     # training_tasks = embedding_utils.parse_tasks(model_name)
     training_tasks = []
