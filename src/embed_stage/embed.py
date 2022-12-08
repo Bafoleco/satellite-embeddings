@@ -23,23 +23,30 @@ def get_input_features(temp_features):
         temp_features[FEATURE_KEY] = input[0].detach()
     return hook
 
+def get_last_layer(model):
+    has_children = True
+    last_layer = model
+    while has_children:
+        for child in last_layer.children():
+            last_layer = child
+
+        if len(list(last_layer.children())) > 0:
+            has_children = True
+        else:
+            has_children = False
+    
+    return last_layer
+
 def embed_images(model, transform):
     temp_features = {}
     embeddings = {}
 
-    # TODO make this more elegant
-    for child in model.children():
-        last_layer = child
-        print(last_layer)
+    final_layer = get_last_layer(model)
 
-    if last_layer.children:
-        for child in last_layer.children():
-            final_layer = child
-
-    last_layer = final_layer
+    print(final_layer)
 
     # we must always apply hook to last hidden layer
-    last_layer.register_forward_hook(get_input_features(temp_features))
+    final_layer.register_forward_hook(get_input_features(temp_features))
 
     dataset = tasks.create_dataset_treecover(transform, image_root=util.get_eval_images_path())
     data_loader = torch.utils.data.DataLoader(dataset, batch_size=64, shuffle=True, num_workers=2)

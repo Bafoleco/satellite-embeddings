@@ -12,7 +12,7 @@ batch_size = 64
 num_workers = 4
 
 # initialize network
-net, model_name, transfrom = networks.get_visiontransformer(4, pretrained=True)
+net, model_name, transfrom = networks.get_visiontransformer(4, 1024, pretrained=True)
 
 # load train data
 dataset = tasks.create_dataset_ablation(transfrom)
@@ -22,13 +22,10 @@ train_len = int(0.8 * len(dataset))
 valid_len = int(0.1 * len(dataset))
 test_len = len(dataset) - train_len - valid_len
 
-# Add seed
-torch.manual_seed(0)
-
-train_set, val_set, test_set = torch.utils.data.random_split(dataset, [train_len, valid_len, test_len])
+train_set, val_set, test_set = torch.utils.data.random_split(dataset, [train_len, valid_len, test_len], torch.Generator().manual_seed(0))
 trainloader = torch.utils.data.DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=num_workers)
 testloader = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffle=False, num_workers=num_workers)
 valloader = torch.utils.data.DataLoader(val_set, batch_size=batch_size, shuffle=False, num_workers=num_workers)
 
 # train model
-train_multitask_model.train_model(dataset, net, trainloader, valloader, testloader, 5, 0.0001, 0.001, model_name, batch_size)
+train_multitask_model.train_model(dataset, net, trainloader, valloader, testloader, 2, 0.00001, 0.01, model_name, batch_size)

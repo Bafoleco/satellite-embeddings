@@ -8,3 +8,5 @@ out
 /data
 !/data/
 data
+data/*
+CONTUS_UAR.pkl

@@ -52,13 +52,15 @@ def train_and_eval(train_X, train_y, eval_X, eval_y, taskname, dir):
 
 if __name__ == "__main__":
     # load embeddings 
-    model_name = "pretrained_visiontransformer_RdInTr"
+    model_name = "pretrained_visiontransformer_1024_ElRdInTr"
 
-    # training_tasks = embedding_utils.parse_tasks(model_name)
-    training_tasks = []
+    training_tasks = embedding_utils.parse_tasks(model_name)
+    # training_tasks = []
 
     with open(os.path.join(util.get_embeddings_path(), util.get_embedding_filename(model_name)), 'rb') as f:
         embeddings = pickle.load(f)
+
+    print("Ours:")
 
     for task in tasks.all_tasks:
         if task in training_tasks:
@@ -73,7 +75,6 @@ if __name__ == "__main__":
         train_X, train_y, valid_X, valid_y, test_X, test_y = dataset.split()
         # print("Train size: ", len(train_X))
 
-        print("Ours:")
         dir = os.path.join(".", "plots", model_name)
         if not os.path.exists(dir):
             os.makedirs(dir)
@@ -86,6 +87,8 @@ if __name__ == "__main__":
         ids_X = mosaiks_embeddings["ids_X"]
         mosaiks_embeddings = embedding_utils.mosaiks_format_to_map(X, ids_X, embeddings)
 
+    print("MOSAIKS:")
+
     for task in tasks.all_tasks:
         if task in training_tasks:
             continue
@@ -96,8 +99,6 @@ if __name__ == "__main__":
 
         # split into train and eval
         train_X, train_y, valid_X, valid_y, test_X, test_y = dataset.split()
-
-        print("MOSAIKS:")
 
         dir = os.path.join(".", "plots", model_name + "_mosaiks")
         if not os.path.exists(dir):

@@ -17,7 +17,7 @@ def parse_tasks(model_name):
     """
     Parse the tasks from the model name
     """
-    task_str = model_name.split("_")[2]
+    task_str = model_name.split("_")[-1]
 
     print("Task str: ", task_str)
 

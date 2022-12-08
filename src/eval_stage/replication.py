@@ -8,8 +8,6 @@ import dataset.dataloader as dataloader
 import dataset.tasks as tasks
 
 # we attempt to validate the MOSAIKS results using our own code
-
-
 def mosaiks_format_to_map(X, ids_X, dim=2048):
     """
     Convert the mosaiks format to a map
