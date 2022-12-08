@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt # for plotting
 import numpy as np
-from util import get_model_loss, get_percent_error, graph_performance # for transformation
+from util.util import get_model_loss, get_percent_error, graph_performance # for transformation
 import os
 from sklearn.model_selection import RandomizedSearchCV
 
@@ -14,9 +14,10 @@ import matplotlib.pyplot as plt
 
 # local imports
 from dataset.dataloader import SatDataset
-from networks import ConvolutionalNeuralNet, Net
+from training_stage.networks import ConvolutionalNeuralNet, Net
 
 from ray import tune
+from ray.air import session
 
 #####
 #####
@@ -36,7 +37,7 @@ num_workers = 2
  #   "model_dir": model_dir,
  #   save_model = True})
 
-def train_model(config, checkpoint_dir = None):
+def train_model(config):
     net = config['net']
     save_model = config['save_model']
     dataset = config['dataset']
@@ -87,8 +88,8 @@ def train_model(config, checkpoint_dir = None):
                 avg = running_loss / 10
                 running_loss = 0.0
                 
-        val_loss = get_model_loss(valloader, dataset, net, criterion)
-        tune.report(val_loss=val_loss)
+        val_loss = get_model_loss(valloader, config['dataset'], net, criterion)
+        session.report({"val_loss":val_loss})
         print("Validation loss: " + str(val_loss))
         x.append(epoch)
         val_losses.append(val_loss)

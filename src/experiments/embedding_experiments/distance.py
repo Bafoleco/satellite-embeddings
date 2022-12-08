@@ -8,7 +8,6 @@ import geopy.distance
 # setting path
 sys.path.append('../..')
 
-
 import util.embedding_utils as embedding_utils
 import util.util as util
 
