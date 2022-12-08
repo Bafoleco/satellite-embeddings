@@ -54,4 +54,3 @@ if __name__ == "__main__":
 
     plot_pca(embeddings, "embeddings")
     plot_pca(mosaiks_embeddings, "mosaiks_embeddings")
-
