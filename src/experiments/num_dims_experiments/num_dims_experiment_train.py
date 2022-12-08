@@ -20,7 +20,7 @@ _, _, transfrom = networks.get_visiontransformer(1, 1, pretrained=True)
 # load train data
 dataset = tasks.create_dataset_ablation(transfrom)
 
-dim_list = [512, 1024, 2048, 4096]
+dim_list = [4096, 2048, 512]
 
 for dim in dim_list:
     net, model_name, transfrom = networks.get_visiontransformer(len(dataset.tasks), dim, pretrained=True)
@@ -37,7 +37,7 @@ for dim in dim_list:
 
     batch_size = 64
     learning_rate = 0.00001
-    num_epochs = 5
+    num_epochs = 7
     weight_decay = 0.01
 
     train_multitask_model.train_model(dataset, net, trainloader, valloader, testloader, num_epochs, learning_rate, weight_decay, model_name, batch_size)
