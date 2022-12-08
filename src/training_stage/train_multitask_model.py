@@ -84,4 +84,4 @@ def train_model(dataset, net, trainloader, valloader, testloader, num_epochs, le
 
     # save model
     name = model_name + "_" + dataset.get_task_code()
-    torch.save(net, os.path.join(source_dir.parent, "out", "models", name + ".pth"))
+    torch.save(net, os.path.join(source_dir.parent, "out", "embeddings", name + ".pth"))
