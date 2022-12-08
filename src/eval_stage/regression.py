@@ -51,11 +51,12 @@ def train_and_eval(train_X, train_y, eval_X, eval_y, taskname, dir):
 
 if __name__ == "__main__":
     # load embeddings 
-    model_name = "pretrained_vgg13_ElRdInNl"
+    model_name = "pretrained_resnet"
 
-    training_tasks = embedding_utils.parse_tasks(model_name)
+    # training_tasks = embedding_utils.parse_tasks(model_name)
+    training_tasks = []
 
-    with open('../out/embeddings/' + util.get_embedding_filename(model_name), 'rb') as f:
+    with open(os.path.join(util.get_embeddings_path(), util.get_embedding_filename(model_name)), 'rb') as f:
         embeddings = pickle.load(f)
 
     for task in tasks.all_tasks:

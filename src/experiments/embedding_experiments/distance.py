@@ -4,11 +4,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import geopy.distance
+import os
 
 # setting path
 sys.path.append('../..')
 
 import util.embedding_utils as embedding_utils
+import util.plot as plot
 import util.util as util
 
 def create_lat_lon_map():
@@ -51,31 +53,13 @@ def plot_distance_comp(distances, embedded_distances, name):
     # clear the plot
     plt.clf()
 
-if __name__ == "__main__":
-    # load embeddings 
-    model_name = "pretrained_resnet"
-
-    with open('../../out/embeddings/' + util.get_embedding_filename(model_name), 'rb') as f:
-        embeddings = pickle.load(f)
-
-    with open('../../../data/int/CONTUS_UAR.pkl', 'rb') as f:
-        mosaiks_embeddings = pickle.load(f)
-        X = mosaiks_embeddings["X"]
-        ids_X = mosaiks_embeddings["ids_X"]
-        mosaiks_embeddings = embedding_utils.mosaiks_format_to_map(X, ids_X, embeddings)
-
-
+def distance_comp(embeddings, pairs=10000):
     lat_lon_map = create_lat_lon_map()
 
-    print("Lat Lon Map: ", lat_lon_map)
-
-
     distances = []
-    embedded_distance_mosaiks = []
     embedded_distance = []
 
-    # pick 1000 random pairs
-    for i in range(5000):
+    for i in range(pairs):
         # report progress
         if i % 100 == 0:
             print("Progress: ", i)
@@ -88,12 +72,7 @@ if __name__ == "__main__":
         emb1 = embeddings[key1]
         emb2 = embeddings[key2]
 
-        # get the mosaiks embeddings
-        mosaiks_emb1 = mosaiks_embeddings[key1]
-        mosaiks_emb2 = mosaiks_embeddings[key2]
-
         # compute the real distance
-
         lat1 = lat_lon_map[lat_lon_map['ids'] == key1]['lat'].values[0]
         lon1 = lat_lon_map[lat_lon_map['ids'] == key1]['lon'].values[0]
 
@@ -110,31 +89,45 @@ if __name__ == "__main__":
         # compute the embedded distance
         embedded_distance.append(np.linalg.norm(emb1 - emb2))
 
-        # print(np.linalg.norm(emb1 - emb2))
-
-        # compute the mosaiks embedded distance
-        embedded_distance_mosaiks.append(np.linalg.norm(mosaiks_emb1 - mosaiks_emb2))
-
+    # scale to mean zero and unit variance
+    # distances = (distances - np.mean(distances)) / np.std(distances)
+    # embedded_distance = (embedded_distance - np.mean(embedded_distance)) / np.std(embedded_distance)
 
     # get mean distances
     mean_real_distance = np.mean(distances)
     mean_embedded_distance = np.mean(embedded_distance)
-    mean_embedded_distance_mosaiks = np.mean(embedded_distance_mosaiks)
 
     # divide by mean
     distances = [x / mean_real_distance for x in distances]
     embedded_distance = [x / mean_embedded_distance for x in embedded_distance]
-    embedded_distance_mosaiks = [x / mean_embedded_distance_mosaiks for x in embedded_distance_mosaiks]
 
-    # plot our data
-    plot_distance_comp(distances, embedded_distance, "ours")
+    return distances, embedded_distance
 
-    # plot mosaiks data
-    plot_distance_comp(distances, embedded_distance_mosaiks, "mosaiks")
+if __name__ == "__main__":
+    # load embeddings 
+    model_name = "pretrained_resnet"
+    plots_dir = os.path.join(os.path.dirname(__file__), "plots")
 
-    # compute the correlation
-    print("Correlation between real and embedded distance: ", np.corrcoef(distances, embedded_distance)[0, 1])
+    with open('../../out/embeddings/' + util.get_embedding_filename(model_name), 'rb') as f:
+        embeddings = pickle.load(f)
+        
+        # compute the distance
+        distances, embedded_distance = distance_comp(embeddings)
+        plot.plot_and_fit(distances, "True Distance", embedded_distance, "Embedded Distance",  "Multi-Task Distance Comparison", "our_distance", plots_dir)
 
-    # compute the correlation 
-    print("Correlation between real and mosaiks embedded distance: ", np.corrcoef(distances, embedded_distance_mosaiks)[0, 1])
+    with open('../../../data/int/CONTUS_UAR.pkl', 'rb') as f:
+        mosaiks_embeddings = pickle.load(f)
+        X = mosaiks_embeddings["X"]
+        ids_X = mosaiks_embeddings["ids_X"]
+        mosaiks_embeddings = embedding_utils.mosaiks_format_to_map(X, ids_X, embeddings)
+
+        distances, embedded_distance_mosaiks = distance_comp(mosaiks_embeddings)
+
+        plot.plot_and_fit(distances, "True Distance", embedded_distance_mosaiks, "Embedded Distance",  "MOSAIKS Distance Comparison", "mosaiks_distance", plots_dir)
+
+        # compute the correlation
+        print("Correlation between real and embedded distance: ", np.corrcoef(distances, embedded_distance)[0, 1])
+
+        # compute the correlation 
+        print("Correlation between real and mosaiks embedded distance: ", np.corrcoef(distances, embedded_distance_mosaiks)[0, 1])
 

@@ -65,6 +65,10 @@ class SatDataset(Dataset):
             filtered_csv.set_index("ID", inplace=True)
 
             col = filtered_csv.loc[:, task.col_name]
+
+            if task.log:
+                col = np.log(col + 1)
+
             norm_col, col_transform = normalize(col)
 
             ## merge with df at common indices
@@ -117,7 +121,7 @@ class EmbeddedDataset:
 
         csv = pd.read_csv(task.csv_file)
 
-        mask = csv.apply(lambda row: row["ID"] in keys, axis=1)
+        mask = csv.apply(lambda row: row["ID"] in keys and row[task.col_name] >= 0, axis=1)
 
         filtered_csv = csv[mask]
         filtered_csv = filtered_csv.reset_index()
@@ -132,6 +136,8 @@ class EmbeddedDataset:
             id = filtered_csv.iloc[i, filtered_csv.columns.get_loc("ID")]
             X[i, :] = embeddings[id]
             y[i] = filtered_csv.iloc[i, filtered_csv.columns.get_loc(task.col_name)]
+            if task.log:
+                y[i] = np.log(y[i] + 1)
 
         # print("X", X)
 

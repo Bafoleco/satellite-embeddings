@@ -12,7 +12,7 @@ import torch.optim as optim # optimzer
 import pandas as pd
 from PIL import Image
 import torchvision.models as models
-from torchvision.models import ResNet18_Weights, ResNet50_Weights, ViT_B_16_Weights, ViT_B_32_Weights, ViT_L_32_Weights, Wide_ResNet101_2_Weights, VGG13_Weights
+from torchvision.models import ResNet18_Weights, ResNet50_Weights, ViT_B_16_Weights, ViT_B_32_Weights, ViT_L_32_Weights, Wide_ResNet101_2_Weights, VGG13_Weights, ViT_L_16_Weights
 
 # local imports
 from dataset.dataloader import SatDataset
@@ -67,6 +67,24 @@ def get_vgg13(outputs, pretrained=True):
 
     return net, model_name, pretrained_weights.transforms() if pretrained else None
 
+
+def get_vit_l_16(outputs, pretrained=True):
+    if pretrained:
+        pretrained_weights = ViT_L_16_Weights.DEFAULT
+    else:
+        pretrained_weights = None
+
+    net = models.vit_l_16(weights=pretrained_weights) # try with both pre-trained and not pre-trained ResNet model!
+
+    # print(net)
+
+    num_ftrs = net.heads.head.in_features
+    print("num_ftrs", num_ftrs)
+    net.heads.head = nn.Linear(in_features=num_ftrs, out_features=outputs)
+
+    model_name = "pretrained_vit_l_16" if pretrained else "vit_l_16"
+
+    return net, model_name, pretrained_weights.transforms() if pretrained else None
 
 def get_visiontransformer(outputs, pretrained=True):
     if pretrained:
@@ -169,4 +187,4 @@ class Net(nn.Module):
 
 if __name__ == "__main__":
     # get_visiontransformerb32(1, pretrained=False)
-    print(models.vgg13(weights=None))
+    print(models.vit_l_16(weights=None))
