@@ -6,6 +6,7 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_squared_error
 import matplotlib.pyplot as plt
 import os
+from hyperopt import fmin, tpe, hp, Trials, STATUS_OK
 
 import sys
 sys.path.append('../')
@@ -51,6 +52,12 @@ def count_all_zero_columns(X):
     return count
 
 def train_and_eval(train_X, train_y, eval_X, eval_y, taskname, dir, lamb=0.05):
+def train_lin_reg(params):
+    # TODO: Possibly normalize ridge??
+    model = Ridge(params['ridge_coeff']).fit(params['train_X'], params['train_y'])
+    return {'loss': model.score(params['eval_X'], params['eval_y']), 'status': STATUS_OK}
+
+def train_and_eval(train_X, train_y, eval_X, eval_y, taskname, dir):
     """
     Train and evaluate a linear regression model
     """
@@ -60,6 +67,29 @@ def train_and_eval(train_X, train_y, eval_X, eval_y, taskname, dir, lamb=0.05):
 
     # TODO: Train ridge regression
     model = Ridge(lamb).fit(train_X, train_y) # TODO: Hyperparameter tune Ridge Regression
+    # fspace = {
+    #     'ridge_coeff': hp.lognormal('ridge_coeff', 0.01, 0.5),
+    #     'train_X': train_X,
+    #     'train_y': train_y,
+    #     'eval_X': eval_X,
+    #     'eval_y': eval_y,
+    # }
+
+    # trials = Trials()
+
+    # best = fmin(
+    #     fn=train_lin_reg,
+    #     space=fspace,
+    #     algo=tpe.suggest,
+    #     max_evals=150)
+
+    # print("Best: ", best)
+    # # NOTE: Ridge values of 0.5 were doing pretty well tbh.
+    # # TODO: Get better hyperparameter search implemented!
+
+    # # Should I normalize Ridge?
+    # model = Ridge(best['ridge_coeff']).fit(train_X, train_y)
+
     score = model.score(eval_X, eval_y)
 
 
@@ -78,6 +108,7 @@ def train_and_eval(train_X, train_y, eval_X, eval_y, taskname, dir, lamb=0.05):
 if __name__ == "__main__":
     # load embeddings 
     model_name = "pretrained_visiontransformer_1024_ElRdTr"
+    # model_name = "pretrained_visiontransformer_1024_ElRdIn"
 
     training_tasks = embedding_utils.parse_tasks(model_name)
     # training_tasks = []

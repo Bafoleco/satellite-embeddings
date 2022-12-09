@@ -73,13 +73,18 @@ def embed_images(model, transform):
     return embeddings
 
 def save_embeddings(model_name):
+    # TODO: Switch back to this
     model = torch.load(os.path.join(util.get_models_path(), model_name + ".pth"))
+
+#    model = torch.load(os.path.join(util.get_data_path(), "models_2/ablation/", model_name + ".pth"))
 
     transform = networks.get_weights(model_name).transforms()
 
     embeddings = embed_images(model, transform)
     embeddings_name = model_name + "_embeddings.pkl"
 
+# TODO: Change back to util.get_embeddings_path()
+# with open(os.path.join(util.get_embeddings_path(), embeddings_name), 'wb') as f:
     with open(os.path.join(util.get_embeddings_path(), embeddings_name), 'wb') as f:
         pickle.dump(embeddings, f)
 
