@@ -16,20 +16,32 @@ import dataset.dataloader as dataloader
 import dataset.tasks as tasks
 import util.embedding_utils as embedding_utils
 import util.util as util
+import seaborn as sns 
 
 def draw_graph(y_pred, y, task_name, dir):
     """
     Draw a graph of the predictions
     """
-    plt.scatter(y, y_pred)
+#    plt.scatter(y, y_pred)
     plt.xlabel("Actual")
     plt.ylabel("Predicted")
     plt.title(task_name)
-    plt.savefig(os.path.join(dir, task_name + ".png"))
+#    sns.scatterplot(x=y, y=y_pred, palette="deep")
+
+    scatter_color = "green"
+    line_color = "red"
+
+    if (task_name == 'population'):
+        scatter_color = "cyan"
+    elif (task_name == 'nightlights'):
+        scatter_color = "#4dffbd"
+
+    sns.regplot(y, y_pred, scatter_kws={"color": scatter_color}, line_kws={"color": "red"}, ci = None)
+
+    plt.savefig(os.path.join(dir, task_name + "_plotexp_" ".png"))
     plt.clf()
 
 def train_lin_reg(params):
-    # TODO: Possibly normalize ridge??
     model = Ridge(params['ridge_coeff']).fit(params['train_X'], params['train_y'])
     return {'loss': model.score(params['eval_X'], params['eval_y']), 'status': STATUS_OK}
 
@@ -51,26 +63,22 @@ def train_and_eval(train_X, train_y, eval_X, eval_y, taskname, dir):
 
     trials = Trials()
 
-    best = fmin(
-        fn=train_lin_reg,
-        space=fspace,
-        algo=tpe.suggest,
-        max_evals=150)
+#    best = fmin(
+#        fn=train_lin_reg,
+#        space=fspace,
+#        algo=tpe.suggest,
+#        max_evals=150)
 
-    print("Best: ", best)
-    # NOTE: Ridge values of 0.5 were doing pretty well tbh.
-    # TODO: Get better hyperparameter search implemented!
-
-    # Should I normalize Ridge?
-    model = Ridge(best['ridge_coeff']).fit(train_X, train_y)
+ #   print("Best: ", best)
+    model = Ridge(alpha = 0, normalize = True).fit(train_X, train_y)
 
     score = model.score(eval_X, eval_y)
     print("Score: " + str(score))
-    # print("Cross Validation Score: " + str(cross_val_score(model, eval_X, eval_y, cv=5)))
+    print("Cross Validation Score: " + str(cross_val_score(model, eval_X, eval_y, cv=5)))
 
     y_pred = model.predict(eval_X)
-    # print("Mean Absolute Error: ", mean_absolute_error(eval_y, y_pred))
-    # print("Mean Squared Error: ", mean_squared_error(eval_y, y_pred))
+    print("Mean Absolute Error: ", mean_absolute_error(eval_y, y_pred))
+    print("Mean Squared Error: ", mean_squared_error(eval_y, y_pred))
 
     # graph
     draw_graph(y_pred, eval_y, taskname, dir)

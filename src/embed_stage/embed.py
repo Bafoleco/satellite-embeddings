@@ -65,6 +65,7 @@ def embed_images(model, transform):
     return embeddings
 
 def save_embeddings(model_name):
+    print("MODEL NAME ", model_name)
     # TODO: Switch back to this
     model = torch.load(os.path.join(util.get_models_path(), model_name + ".pth"))
 

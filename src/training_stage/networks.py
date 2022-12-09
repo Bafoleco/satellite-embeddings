@@ -25,7 +25,8 @@ name_to_weights = {
     "pretrained_vit_b_32": ViT_B_32_Weights.DEFAULT,
     "pretrained_vit_l_32": ViT_L_32_Weights.DEFAULT,
     "pretrained_wide_resnet101_2": Wide_ResNet101_2_Weights.DEFAULT,
-    "pretrained_vgg13": VGG13_Weights.DEFAULT
+    "pretrained_vgg13": VGG13_Weights.DEFAULT,
+    "baseline_model": ViT_B_16_Weights.DEFAULT
 }
 
 def get_weights(name):
@@ -95,7 +96,7 @@ def get_visiontransformer(outputs, embedding_dim, pretrained=True):
     else:
         pretrained_weights = None
 
-    net = models.vit_b_16(weights=pretrained_weights) # try with both pre-trained and not pre-trained ResNet model!
+    net = models.vit_b_16(weights=pretrained_weights)
     
     num_in_ftrs = net.heads.head.in_features
     net.heads.head = nn.Sequential(
