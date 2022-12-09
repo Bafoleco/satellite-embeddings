@@ -22,11 +22,17 @@ def plot_pca(X, name):
     # print expalined variance ratio
     print("Explained variance ratio: ", pca.explained_variance_ratio_)
 
-    # plot explained variance ratio
-    plt.plot(pca.explained_variance_ratio_)
 
-    # plot cumulative
-    plt.plot(np.cumsum(pca.explained_variance_ratio_))
+    # bar graph of explained variance ratio
+    plt.bar(range(0, 50), pca.explained_variance_ratio_, alpha=0.5, align='center')
+    plt.step(range(0, 50), np.cumsum(pca.explained_variance_ratio_), where='mid')
+
+
+    # # plot explained variance ratio
+    # plt.plot(pca.explained_variance_ratio_)
+
+    # # plot cumulative
+    # plt.plot(np.cumsum(pca.explained_variance_ratio_))
 
     plt.xlabel("Component")
     plt.ylabel("Explained Variance Ratio")
@@ -38,7 +44,7 @@ def plot_pca(X, name):
 
 if __name__ == "__main__":
     # load embeddings 
-    model_name = "pretrained_visiontransformer_ElInPoRdTrNl"
+    model_name = "pretrained_visiontransformer_4096_ElRdInTr"
 
     with open('../../out/embeddings/' + util.get_embedding_filename(model_name), 'rb') as f:
         embeddings = pickle.load(f)

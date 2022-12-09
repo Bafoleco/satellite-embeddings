@@ -27,7 +27,30 @@ def draw_graph(y_pred, y, task_name, dir):
     plt.savefig(os.path.join(dir, task_name + ".png"))
     plt.clf()
 
-def train_and_eval(train_X, train_y, eval_X, eval_y, taskname, dir):
+def count_zeros(X):
+    """
+    Count the number of zeros in a matrix
+    """
+    count = 0
+    total = 0
+    for row in X:
+        for elem in row:
+            total += 1
+            if elem == 0:
+                count += 1
+    return count / total
+
+def count_all_zero_columns(X):
+    """
+    Count the number of columns that are all zeros
+    """
+    count = 0
+    for i in range(len(X[0])):
+        if np.count_nonzero(X[:, i]) == 0:
+            count += 1
+    return count
+
+def train_and_eval(train_X, train_y, eval_X, eval_y, taskname, dir, lamb=0.05):
     """
     Train and evaluate a linear regression model
     """
@@ -36,8 +59,10 @@ def train_and_eval(train_X, train_y, eval_X, eval_y, taskname, dir):
     print("Dimensions: ", len(train_X[0]))
 
     # TODO: Train ridge regression
-    model = Ridge(0.04).fit(train_X, train_y) # TODO: Hyperparameter tune Ridge Regression
+    model = Ridge(lamb).fit(train_X, train_y) # TODO: Hyperparameter tune Ridge Regression
     score = model.score(eval_X, eval_y)
+
+
     print("Score: " + str(score))
     # print("Cross Validation Score: " + str(cross_val_score(model, eval_X, eval_y, cv=5)))
 
@@ -52,7 +77,7 @@ def train_and_eval(train_X, train_y, eval_X, eval_y, taskname, dir):
 
 if __name__ == "__main__":
     # load embeddings 
-    model_name = "pretrained_visiontransformer_1024_ElRdInTr"
+    model_name = "pretrained_visiontransformer_1024_ElRdTr"
 
     training_tasks = embedding_utils.parse_tasks(model_name)
     # training_tasks = []

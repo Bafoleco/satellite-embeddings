@@ -19,7 +19,9 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 def get_input_features(temp_features):
     def hook(model, input, output):
-        print(input[0].shape)
+        # print(model)
+        print(input)
+        # print(input[0].shape)
         temp_features[FEATURE_KEY] = input[0].detach()
     return hook
 
@@ -44,6 +46,12 @@ def embed_images(model, transform):
     final_layer = get_last_layer(model)
 
     print(final_layer)
+
+    # print("Weights: " + str(final_layer.weight.shape))
+    # # print("Bias: " + str(bias.shape)) for bias in final_layer.bias
+
+    # print(final_layer.weight)
+
 
     # we must always apply hook to last hidden layer
     final_layer.register_forward_hook(get_input_features(temp_features))
