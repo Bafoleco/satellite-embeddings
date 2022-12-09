@@ -139,3 +139,8 @@ def get_resnet18(outputs, pretrained=True):
     model_name = "pretrained_resnet18" if pretrained else "resnet18"
 
     return net, model_name, pretrained_weights.transforms() if pretrained else None
+
+
+
+net = get_visiontransformer(10, 1024, pretrained=True)
+
