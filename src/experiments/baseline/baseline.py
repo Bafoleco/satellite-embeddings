@@ -12,10 +12,11 @@ from pathlib import Path
 batch_size = 64
 num_workers = 4
 
-net, model_name, transfrom = networks.get_visiontransformer(1, 1024, pretrained=True)
+net, model_name, transfrom = networks.get_baseline()
 
-name = "pretrained_visiontransformer_baseline"
+print(net)
+
 source_path = Path(__file__).resolve()
 source_dir = source_path.parent.parent
 
-torch.save(net, os.path.join(source_dir.parent, "out", "models", name + ".pth"))
+torch.save(net, os.path.join(util.get_models_path(), model_name + ".pth"))

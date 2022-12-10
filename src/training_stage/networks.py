@@ -110,6 +110,11 @@ def get_visiontransformer(outputs, embedding_dim, pretrained=True):
 
     return net, model_name, pretrained_weights.transforms() if pretrained else None
 
+def get_baseline():
+    net = models.vit_l_16(weights=ViT_L_16_Weights.DEFAULT)
+    model_name = "baseline_model"
+    return net, model_name, ViT_L_16_Weights.DEFAULT.transforms()
+
 def get_resnet50(outputs, pretrained=True):
     if pretrained:
         pretrained_weights = ResNet50_Weights.DEFAULT
