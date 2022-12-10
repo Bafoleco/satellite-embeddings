@@ -79,6 +79,9 @@ def save_embeddings(model_name):
 
 #    model = torch.load(os.path.join(util.get_data_path(), "models_2/ablation/", model_name + ".pth"))
 
+    
+
+    print(networks.get_weights(model_name))
     transform = networks.get_weights(model_name).transforms()
 
     embeddings = embed_images(model, transform)

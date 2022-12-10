@@ -64,12 +64,11 @@ def count_all_zero_columns(X):
             count += 1
     return count
 
-def train_and_eval(train_X, train_y, eval_X, eval_y, taskname, dir, lamb=0.05):
 def train_lin_reg(params):
     model = Ridge(params['ridge_coeff']).fit(params['train_X'], params['train_y'])
     return {'loss': model.score(params['eval_X'], params['eval_y']), 'status': STATUS_OK}
 
-def train_and_eval(train_X, train_y, eval_X, eval_y, taskname, dir):
+def train_and_eval(train_X, train_y, eval_X, eval_y, taskname, dir, lamb=2):
     """
     Train and evaluate a linear regression model
     """
@@ -77,7 +76,6 @@ def train_and_eval(train_X, train_y, eval_X, eval_y, taskname, dir):
     print("Train size: ", len(train_X))
     print("Dimensions: ", len(train_X[0]))
 
-    # TODO: Train ridge regression
     model = Ridge(lamb).fit(train_X, train_y) # TODO: Hyperparameter tune Ridge Regression
     # fspace = {
     #     'ridge_coeff': hp.lognormal('ridge_coeff', 0.01, 0.5),
@@ -89,36 +87,37 @@ def train_and_eval(train_X, train_y, eval_X, eval_y, taskname, dir):
 
     # trials = Trials()
 
-#    best = fmin(
-#        fn=train_lin_reg,
-#        space=fspace,
-#        algo=tpe.suggest,
-#        max_evals=150)
+    #    best = fmin(
+    #        fn=train_lin_reg,
+    #        space=fspace,
+    #        algo=tpe.suggest,
+    #        max_evals=150)
 
- #   print("Best: ", best)
-    model = Ridge(alpha = 0, normalize = True).fit(train_X, train_y)
+    #   print("Best: ", best)
+    # model = Ridge(alpha = 0, normalize = True).fit(train_X, train_y)
     # model = Ridge(best['ridge_coeff']).fit(train_X, train_y)
 
     score = model.score(eval_X, eval_y)
 
     print("Score: " + str(score))
-    print("Cross Validation Score: " + str(cross_val_score(model, eval_X, eval_y, cv=5)))
+    # print("Cross Validation Score: " + str(cross_val_score(model, eval_X, eval_y, cv=5)))
 
     y_pred = model.predict(eval_X)
-    print("Mean Absolute Error: ", mean_absolute_error(eval_y, y_pred))
-    print("Mean Squared Error: ", mean_squared_error(eval_y, y_pred))
+    # print("Mean Absolute Error: ", mean_absolute_error(eval_y, y_pred))
+    # print("Mean Squared Error: ", mean_squared_error(eval_y, y_pred))
 
     # graph
-    draw_graph(y_pred, eval_y, taskname, dir)
+    # draw_graph(y_pred, eval_y, taskname, dir)
 
     return score
 
 if __name__ == "__main__":
     # load embeddings 
-    model_name = "pretrained_visiontransformer_1024_ElRdTr"
+    model_name = "pretrained_visiontransformer_1024_RdInTr"
     # model_name = "pretrained_visiontransformer_1024_ElRdIn"
 
-    training_tasks = embedding_utils.parse_tasks(model_name)
+    full_model_name = "pretrained_visiontransformer_1024_ElRdInTr"
+    training_tasks = embedding_utils.parse_tasks(full_model_name)
     # training_tasks = []
 
     with open(os.path.join(util.get_embeddings_path(), util.get_embedding_filename(model_name)), 'rb') as f:
@@ -143,7 +142,7 @@ if __name__ == "__main__":
         if not os.path.exists(dir):
             os.makedirs(dir)
 
-        train_and_eval(train_X, train_y, valid_X, valid_y, task.name, dir)
+        train_and_eval(train_X, train_y, test_X, test_y, task.name, dir)
 
     with open('../../data/int/CONTUS_UAR.pkl', 'rb') as f:
         mosaiks_embeddings = pickle.load(f)
@@ -167,4 +166,4 @@ if __name__ == "__main__":
         dir = os.path.join(".", "plots", model_name + "_mosaiks")
         if not os.path.exists(dir):
             os.makedirs(dir)
-        train_and_eval(train_X, train_y, valid_X, valid_y, task.name, dir)
+        train_and_eval(train_X, train_y, test_X, test_y, task.name, dir)

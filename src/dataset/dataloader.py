@@ -144,8 +144,6 @@ class EmbeddedDataset:
         self.X = X
         self.y = y[:,0]
 
-
-    # TODO shuffling, but like deterministic shuffling
     # train valid test split
     def split(self, train_size=0.8, valid_size=0.1, test_size=0.1):
         assert train_size + test_size + valid_size == 1

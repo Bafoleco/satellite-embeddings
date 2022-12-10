@@ -26,16 +26,17 @@ name_to_weights = {
     "pretrained_vit_l_32": ViT_L_32_Weights.DEFAULT,
     "pretrained_wide_resnet101_2": Wide_ResNet101_2_Weights.DEFAULT,
     "pretrained_vgg13": VGG13_Weights.DEFAULT,
-    "baseline_model": ViT_B_16_Weights.DEFAULT
+    "baseline_model": ViT_L_16_Weights.DEFAULT
 }
 
 def get_weights(name):
-    name = name[0: name.rfind("_")]
+    # name = name[0: name.rfind("_")]
 
     if name.startswith("pretrained_visiontransformer"):
         name = "pretrained_visiontransformer"
 
     if name not in name_to_weights:
+        print("Error: no weights found for model: " + name)
         raise None
 
     return name_to_weights[name]
