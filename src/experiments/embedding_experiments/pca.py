@@ -55,7 +55,6 @@ def plot_pca(X, name):
 
     plt.close()
 
-
 if __name__ == "__main__":
     # load embeddings 
     model_name = "pretrained_visiontransformer_4096_ElRdInTr"

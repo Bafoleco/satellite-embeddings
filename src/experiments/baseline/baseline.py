@@ -14,15 +14,8 @@ num_workers = 4
 
 net, model_name, transfrom = networks.get_visiontransformer(1, 1024, pretrained=True)
 
-name = "baseline_model"
+name = "pretrained_visiontransformer_baseline"
 source_path = Path(__file__).resolve()
 source_dir = source_path.parent.parent
 
 torch.save(net, os.path.join(source_dir.parent, "out", "models", name + ".pth"))
-
-# Baseline:
-#  File "/home/nnaik39/satellite-embeddings/src/embed_stage/../embed_stage/embed.py", line 73, in save_embeddings
-#    transform = networks.get_weights(model_name).transforms()
-#  File "/home/nnaik39/satellite-embeddings/src/embed_stage/../training_stage/networks.py", line 38, in get_weights
-#    raise None
-#TypeError: exceptions must derive from BaseException

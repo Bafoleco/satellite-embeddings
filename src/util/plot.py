@@ -1,5 +1,13 @@
 import matplotlib.pyplot as plt
 import os
+import seaborn as sns
+
+def plot_barplot(df, x, y, hue, title, name, dir):
+    plt.title(title)
+
+    sns.barplot(x='Task Combination', y='R^2 Score', hue="hue", data=df)
+
+    plt.savefig(os.path.join(dir, name + ".png"))
 
 def plot_and_fit(x, label_x, y, label_y, title, name, dir):
     plt.title(title)
@@ -20,3 +28,8 @@ def plot_and_fit(x, label_x, y, label_y, title, name, dir):
 
     # clear the plot
     plt.clf()
+
+df = pd.DataFrame(columns = ["Task Combination", "R^2 Score", "hue"])
+
+
+plot_and_fit("R2")
