@@ -32,7 +32,7 @@ def draw_graph(y_pred, y, task_name, dir):
     line_color = "red"
 
     if (task_name == 'population'):
-        scatter_color = "cyan"
+        scatter_color = "darkcyan"
     elif (task_name == 'nightlights'):
         scatter_color = "#4dffbd"
 
@@ -107,7 +107,7 @@ def train_and_eval(train_X, train_y, eval_X, eval_y, taskname, dir, lamb=2):
     # print("Mean Squared Error: ", mean_squared_error(eval_y, y_pred))
 
     # graph
-    # draw_graph(y_pred, eval_y, taskname, dir)
+    draw_graph(y_pred, eval_y, taskname, dir)
 
     return score
 
