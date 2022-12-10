@@ -53,7 +53,7 @@ def plot_distance_comp(distances, embedded_distances, name):
     # clear the plot
     plt.clf()
 
-def distance_comp(embeddings, pairs=10000):
+def distance_comp(embeddings, pairs=5000):
     lat_lon_map = create_lat_lon_map()
 
     distances = []
@@ -90,22 +90,22 @@ def distance_comp(embeddings, pairs=10000):
         embedded_distance.append(np.linalg.norm(emb1 - emb2))
 
     # scale to mean zero and unit variance
-    # distances = (distances - np.mean(distances)) / np.std(distances)
-    # embedded_distance = (embedded_distance - np.mean(embedded_distance)) / np.std(embedded_distance)
+    distances = (distances - np.mean(distances)) / np.std(distances)
+    embedded_distance = (embedded_distance - np.mean(embedded_distance)) / np.std(embedded_distance)
 
-    # get mean distances
-    mean_real_distance = np.mean(distances)
-    mean_embedded_distance = np.mean(embedded_distance)
+    # # get mean distances
+    # mean_real_distance = np.mean(distances)
+    # mean_embedded_distance = np.mean(embedded_distance)
 
-    # divide by mean
-    distances = [x / mean_real_distance for x in distances]
-    embedded_distance = [x / mean_embedded_distance for x in embedded_distance]
+    # # divide by mean
+    # distances = [x / mean_real_distance for x in distances]
+    # embedded_distance = [x / mean_embedded_distance for x in embedded_distance]
 
     return distances, embedded_distance
 
 if __name__ == "__main__":
     # load embeddings 
-    model_name = "pretrained_resnet"
+    model_name = "pretrained_visiontransformer_4096_ElRdInTr"
     plots_dir = os.path.join(os.path.dirname(__file__), "plots")
 
     with open('../../out/embeddings/' + util.get_embedding_filename(model_name), 'rb') as f:
@@ -114,6 +114,9 @@ if __name__ == "__main__":
         # compute the distance
         distances, embedded_distance = distance_comp(embeddings)
         plot.plot_and_fit(distances, "True Distance", embedded_distance, "Embedded Distance",  "Multi-Task Distance Comparison", "our_distance", plots_dir)
+
+        # compute the correlation
+        print("Correlation between real and embedded distance: ", np.corrcoef(distances, embedded_distance)[0, 1])
 
     with open('../../../data/int/CONTUS_UAR.pkl', 'rb') as f:
         mosaiks_embeddings = pickle.load(f)
@@ -125,8 +128,6 @@ if __name__ == "__main__":
 
         plot.plot_and_fit(distances, "True Distance", embedded_distance_mosaiks, "Embedded Distance",  "MOSAIKS Distance Comparison", "mosaiks_distance", plots_dir)
 
-        # compute the correlation
-        print("Correlation between real and embedded distance: ", np.corrcoef(distances, embedded_distance)[0, 1])
 
         # compute the correlation 
         print("Correlation between real and mosaiks embedded distance: ", np.corrcoef(distances, embedded_distance_mosaiks)[0, 1])

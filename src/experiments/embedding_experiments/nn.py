@@ -15,9 +15,9 @@ import util.embedding_utils as embedding_utils
 import util.util as util
 
 
-def interpolate(start, end, embeddings, steps=8, mosaiks=False):
+def interpolate(start, end, embeddings, steps=4, mosaiks=False):
     X, ids_X = embedding_utils.convert_map_to_nparray(embeddings)
-    nn = NearestNeighbors(n_neighbors=5, algorithm='auto').fit(X)
+    nn = NearestNeighbors(n_neighbors=4, algorithm='auto').fit(X)
 
     start_embedding = embeddings[start]
     end_embedding = embeddings[end]
@@ -26,7 +26,7 @@ def interpolate(start, end, embeddings, steps=8, mosaiks=False):
 
     # create directory for interpolation
     print(mosaiks)
-    interpolation_dir = os.path.join("embedding_experiments", "interpolation", start + "_" + end + ("_mosaiks" if mosaiks else ""))
+    interpolation_dir = os.path.join(".", "interpolation", start + "_" + end + ("_mosaiks" if mosaiks else ""))
 
     # remove directory if it exists
     if os.path.exists(interpolation_dir):
@@ -95,14 +95,15 @@ def save_neigbors(id, embeddings, n_neighbors, mosaiks=False):
         img_file = os.path.join(util.get_eval_images_path(), id + ".png")
         shutil.copyfile(img_file, id_folder + "/" + id + ".png")
 
-
 if __name__ == "__main__":
     # load embeddings 
-    model_name = "pretrained_visiontransformer_ElInPoRdTrNl"
+    model_name = "pretrained_visiontransformer_512_ElRdInTr"
 
     with open(os.path.join(util.get_embeddings_path(), util.get_embedding_filename(model_name)), 'rb') as f:
         embeddings = pickle.load(f)
+        print(len(embeddings.keys()))
 
+    interpolate("970,1192", "1461,3072", embeddings)
 
     with open(os.path.join(util.get_data_path(), "int", "CONTUS_UAR.pkl"), 'rb') as f:
         mosaiks_embeddings = pickle.load(f)
@@ -110,7 +111,6 @@ if __name__ == "__main__":
         ids_X = mosaiks_embeddings["ids_X"]
         mosaiks_embeddings = embedding_utils.mosaiks_format_to_map(X, ids_X, embeddings)
 
-    print(len(embeddings.keys()))
 
     # interpolate
     # wilderness to urban
@@ -118,17 +118,13 @@ if __name__ == "__main__":
     # interpolate("116,1583", "1961,1930", mosaiks_embeddings, mosaiks=True)
 
     # desert to forest
-    interpolate("113,2042", "1797,2323", embeddings)
-    interpolate("113,2042", "1797,2323", mosaiks_embeddings, mosaiks=True)
-
-
+    interpolate("970,1192", "1461,3072", mosaiks_embeddings, mosaiks=True)
 
     # X, ids_X = embedding_utils.convert_map_to_nparray(embeddings)
     # mosaiks_embeddings, _ = embedding_utils.convert_map_to_nparray(mosaiks_embeddings)
 
     # save_neigbors("116,1583", embeddings, 5)
     # save_neigbors("116,1583", mosaiks_embeddings, 5, mosaiks=True)
-
 
     # search_vec = embeddings[0]
 
@@ -137,7 +133,4 @@ if __name__ == "__main__":
     # nn = NearestNeighbors(n_neighbors=10, algorithm='auto').fit(embeddings)
     # distances, indices = nn.kneighbors([search_vec])
 
-
     # print(ids_X[indices])
-
-
