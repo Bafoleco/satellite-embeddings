@@ -19,12 +19,7 @@ def plot_pca(X, name):
     pca = PCA(n_components=50)
     pca.fit(X_std)
 
-    # print expalined variance ratio
     print("Explained variance ratio: ", pca.explained_variance_ratio_)
-
-    # title plot from name
-
-    #
 
     if name == "embeddings":
         chart_name = "PCA on Multi-Task Embeddings"
@@ -35,18 +30,10 @@ def plot_pca(X, name):
 
     plt.title(chart_name)
 
-    # bar graph of explained variance ratio
-
     plt.bar(range(0, 50), pca.explained_variance_ratio_, alpha=0.5, align='center')
     plt.step(range(0, 50), np.cumsum(pca.explained_variance_ratio_), where='mid', label='Cumulative explained variance')
 
     plt.legend(loc='best')
-
-    # # plot explained variance ratio
-    # plt.plot(pca.explained_variance_ratio_)
-
-    # # plot cumulative
-    # plt.plot(np.cumsum(pca.explained_variance_ratio_))
 
     plt.xlabel("Component")
     plt.ylabel("Explained Variance Ratio")
@@ -72,6 +59,5 @@ if __name__ == "__main__":
         mosaiks_embeddings = embedding_utils.mosaiks_format_to_map(X, ids_X, embeddings)
 
     mosaiks_embeddings, _ = embedding_utils.convert_map_to_nparray(mosaiks_embeddings)
-
 
     plot_pca(mosaiks_embeddings, "mosaiks_embeddings")

@@ -12,6 +12,7 @@ from pathlib import Path
 batch_size = 64
 num_workers = 4
 
+net, model_name, transfrom = networks.get_visiontransformer(4, 1024, pretrained=True)
 net, model_name, transfrom = networks.get_baseline()
 
 print(net)

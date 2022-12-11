@@ -1,7 +1,6 @@
 # Experiment 2: Hold One Out Experiment
 
 # NOTE: Run all experiments from within the ablation_experiments folder.
-# NOTE: The tune version of this is broken.
 
 import sys
 sys.path.insert(1, '../../')
@@ -102,7 +101,7 @@ results = tuner.fit()
 #    "model_dir": model_dir,
 #    "save_model": True})
 
-#results = analysis.fit() ??
+#results = analysis.fit()
 print("Best config: ", analysis.get_best_config(metric="val_loss"))
 
 # Get a dataframe for analyzing trial results.
