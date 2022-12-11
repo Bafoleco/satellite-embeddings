@@ -111,7 +111,6 @@ if __name__ == "__main__":
         ids_X = mosaiks_embeddings["ids_X"]
         mosaiks_embeddings = embedding_utils.mosaiks_format_to_map(X, ids_X, embeddings)
 
-
     # interpolate
     # wilderness to urban
     # interpolate("116,1583", "1961,1930", embeddings)

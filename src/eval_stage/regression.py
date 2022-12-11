@@ -22,11 +22,9 @@ def draw_graph(y_pred, y, task_name, dir):
     """
     Draw a graph of the predictions
     """
-#    plt.scatter(y, y_pred)
     plt.xlabel("Actual")
     plt.ylabel("Predicted")
     plt.title(task_name)
-#    sns.scatterplot(x=y, y=y_pred, palette="deep")
 
     scatter_color = "green"
     line_color = "gray"
@@ -36,10 +34,7 @@ def draw_graph(y_pred, y, task_name, dir):
     elif (task_name == 'nightlights'):
         scatter_color = "limegreen"
 
-    # matplotlib plot line y = x
     sns.regplot(y, y_pred, scatter_kws={"color": scatter_color, "s": 5}, line_kws={"color": "red"}, ci = None, fit_reg = False)
-#    plt.plot([0, 1], [0, 1], transform=plt.gca().transAxes, color=line_color)
-    # plot line y = x with ax.axline
     ax = plt.gca()
     ax.axline((0, 0), slope=1, color=line_color)
 
@@ -82,37 +77,35 @@ def train_and_eval(train_X, train_y, eval_X, eval_y, taskname, dir, lamb=2):
 
     print("Train size: ", len(train_X))
     print("Dimensions: ", len(train_X[0]))
-    lamb = 0.01
 
-    model = Ridge(lamb).fit(train_X, train_y) # TODO: Hyperparameter tune Ridge Regression
-    # fspace = {
-    #     'ridge_coeff': hp.lognormal('ridge_coeff', 0.01, 0.5),
-    #     'train_X': train_X,
-    #     'train_y': train_y,
-    #     'eval_X': eval_X,
-    #     'eval_y': eval_y,
-    # }
+    model = Ridge(lamb).fit(train_X, train_y)
 
-    # trials = Trials()
+    fspace = {
+         'ridge_coeff': hp.lognormal('ridge_coeff', 0.01, 0.5),
+         'train_X': train_X,
+         'train_y': train_y,
+         'eval_X': eval_X,
+         'eval_y': eval_y,
+    }
 
-    #    best = fmin(
-    #        fn=train_lin_reg,
-    #        space=fspace,
-    #        algo=tpe.suggest,
-    #        max_evals=150)
+    trials = Trials()
 
-    #   print("Best: ", best)
-    # model = Ridge(alpha = 0, normalize = True).fit(train_X, train_y)
-    # model = Ridge(best['ridge_coeff']).fit(train_X, train_y)
+    best = fmin(
+            fn=train_lin_reg,
+            space=fspace,
+            algo=tpe.suggest,
+            max_evals=150)
+
+    print("Best: ", best)
+    model = Ridge(best['ridge_coeff']).fit(train_X, train_y)
 
     score = model.score(eval_X, eval_y)
 
     print("Score: " + str(score))
-    # print("Cross Validation Score: " + str(cross_val_score(model, eval_X, eval_y, cv=5)))
 
     y_pred = model.predict(eval_X)
-    # print("Mean Absolute Error: ", mean_absolute_error(eval_y, y_pred))
-    # print("Mean Squared Error: ", mean_squared_error(eval_y, y_pred))
+    print("Mean Absolute Error: ", mean_absolute_error(eval_y, y_pred))
+    print("Mean Squared Error: ", mean_squared_error(eval_y, y_pred))
 
     # graph
     draw_graph(y_pred, eval_y, taskname, dir)
@@ -121,7 +114,7 @@ def train_and_eval(train_X, train_y, eval_X, eval_y, taskname, dir, lamb=2):
 
 if __name__ == "__main__":
     # load embeddings 
-    model_name = "pretrained_visiontransformer_1024_ElRdInTr"
+    model_name = "pretrained_visiontransformer_1024_ElRdIn"
     # model_name = "pretrained_visiontransformer_1024_ElRdIn"
 
     full_model_name = "pretrained_visiontransformer_1024_ElRdInTr"

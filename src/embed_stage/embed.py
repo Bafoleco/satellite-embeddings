@@ -52,7 +52,6 @@ def embed_images(model, transform):
 
     # print(final_layer.weight)
 
-
     # we must always apply hook to last hidden layer
     final_layer.register_forward_hook(get_input_features(temp_features))
 
@@ -73,13 +72,8 @@ def embed_images(model, transform):
     return embeddings
 
 def save_embeddings(model_name):
-    print("MODEL NAME ", model_name)
-    # TODO: Switch back to this
+    print("Model Name ", model_name)
     model = torch.load(os.path.join(util.get_models_path(), model_name + ".pth"))
-
-#    model = torch.load(os.path.join(util.get_data_path(), "models_2/ablation/", model_name + ".pth"))
-
-    
 
     print(networks.get_weights(model_name))
     transform = networks.get_weights(model_name).transforms()
@@ -87,8 +81,6 @@ def save_embeddings(model_name):
     embeddings = embed_images(model, transform)
     embeddings_name = model_name + "_embeddings.pkl"
 
-# TODO: Change back to util.get_embeddings_path()
-# with open(os.path.join(util.get_embeddings_path(), embeddings_name), 'wb') as f:
     with open(os.path.join(util.get_embeddings_path(), embeddings_name), 'wb') as f:
         pickle.dump(embeddings, f)
 
