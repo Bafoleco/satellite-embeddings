@@ -113,10 +113,10 @@ def train_and_eval(train_X, train_y, eval_X, eval_y, taskname, dir, lamb=2):
 
 if __name__ == "__main__":
     # load embeddings 
-    model_name = "pretrained_visiontransformer_1024_RdInTr"
+    model_name = "pretrained_visiontransformer_1024_ElRdInTr"
     # model_name = "pretrained_visiontransformer_1024_ElRdIn"
 
-    full_model_name = "pretrained_visiontransformer_1024_ElRdInTr"
+    full_model_name = "pretrained_visiontransformer_4096_ElRdInTr"
     training_tasks = embedding_utils.parse_tasks(full_model_name)
     # training_tasks = []
 
