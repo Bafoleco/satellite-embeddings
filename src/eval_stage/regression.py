@@ -29,16 +29,23 @@ def draw_graph(y_pred, y, task_name, dir):
 #    sns.scatterplot(x=y, y=y_pred, palette="deep")
 
     scatter_color = "green"
-    line_color = "red"
+    line_color = "gray"
 
     if (task_name == 'population'):
         scatter_color = "darkcyan"
     elif (task_name == 'nightlights'):
-        scatter_color = "#4dffbd"
+        scatter_color = "limegreen"
 
-    sns.regplot(y, y_pred, scatter_kws={"color": scatter_color}, line_kws={"color": "red"}, ci = None)
+    # matplotlib plot line y = x
+    sns.regplot(y, y_pred, scatter_kws={"color": scatter_color, "s": 5}, line_kws={"color": "red"}, ci = None, fit_reg = False)
+#    plt.plot([0, 1], [0, 1], transform=plt.gca().transAxes, color=line_color)
+    # plot line y = x with ax.axline
+    ax = plt.gca()
+    ax.axline((0, 0), slope=1, color=line_color)
 
-    plt.savefig(os.path.join(dir, task_name + "_plotexp_" ".png"))
+    print("Saving figure")
+
+    plt.savefig(os.path.join(dir, task_name + "_plotexp" + ".png"))
     plt.clf()
 
 def count_zeros(X):
@@ -75,6 +82,7 @@ def train_and_eval(train_X, train_y, eval_X, eval_y, taskname, dir, lamb=2):
 
     print("Train size: ", len(train_X))
     print("Dimensions: ", len(train_X[0]))
+    lamb = 0.01
 
     model = Ridge(lamb).fit(train_X, train_y) # TODO: Hyperparameter tune Ridge Regression
     # fspace = {
@@ -113,7 +121,7 @@ def train_and_eval(train_X, train_y, eval_X, eval_y, taskname, dir, lamb=2):
 
 if __name__ == "__main__":
     # load embeddings 
-    model_name = "pretrained_visiontransformer_1024_RdInTr"
+    model_name = "pretrained_visiontransformer_1024_ElRdInTr"
     # model_name = "pretrained_visiontransformer_1024_ElRdIn"
 
     full_model_name = "pretrained_visiontransformer_1024_ElRdInTr"
